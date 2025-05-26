@@ -53,6 +53,100 @@ const App = {
     }
 };
 
+// API утилиты
+const API = {
+    baseUrl: '', // Пустая строка для относительных путей
+    
+    async request(url, options = {}) {
+        try {
+            const response = await fetch(this.baseUrl + url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                },
+                ...options
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            return await response.json();
+        } catch (error) {
+            console.error('API Error:', error);
+            throw error;
+        }
+    },
+    
+    // Методы для листов доходов
+    async getSheets() {
+        return this.request('/api/sheets');
+    },
+    
+    async getSheet(id) {
+        return this.request(`/api/sheets/${id}`);
+    },
+    
+    async createSheet(data) {
+        return this.request('/api/sheets', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    
+    async updateSheet(id, data) {
+        return this.request(`/api/sheets/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    },
+    
+    async deleteSheet(id) {
+        return this.request(`/api/sheets/${id}`, {
+            method: 'DELETE'
+        });
+    },
+    
+    // Методы для расходов
+    async createExpense(data) {
+        return this.request('/api/expenses', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    
+    async updateExpense(id, data) {
+        return this.request(`/api/expenses/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    },
+    
+    async deleteExpense(id) {
+        return this.request(`/api/expenses/${id}`, {
+            method: 'DELETE'
+        });
+    },
+    
+    // Методы для калькулятора
+    async getCalculatorHistory() {
+        return this.request('/api/calculator/history');
+    },
+    
+    async addCalculatorHistory(calculation) {
+        return this.request('/api/calculator/history', {
+            method: 'POST',
+            body: JSON.stringify({ calculation })
+        });
+    },
+    
+    async clearCalculatorHistory() {
+        return this.request('/api/calculator/history', {
+            method: 'DELETE'
+        });
+    }
+};
+
 // Модуль модальных окон
 const Modal = {
     current: null,
@@ -81,10 +175,10 @@ const CocoManyModule = {
     sheets: [],
     currentSheet: null,
     
-    init() {
+    async init() {
         this.bindEvents();
         this.setDefaultDate();
-        this.render();
+        await this.loadSheets();
     },
     
     bindEvents() {
@@ -112,7 +206,17 @@ const CocoManyModule = {
         }
     },
     
-    addSheet() {
+    async loadSheets() {
+        try {
+            this.sheets = await API.getSheets();
+            this.render();
+        } catch (error) {
+            console.error('Ошибка загрузки листов:', error);
+            alert('Ошибка загрузки данных');
+        }
+    },
+    
+    async addSheet() {
         const name = document.getElementById('sheet-name').value.trim() || 'Основной доход';
         const amount = parseFloat(document.getElementById('income-amount').value) || 0;
         const date = document.getElementById('income-date').value;
@@ -122,14 +226,14 @@ const CocoManyModule = {
             return;
         }
         
-        this.sheets.push({
-            id: Date.now(),
-            name, amount, date,
-            expenses: []
-        });
-        
-        this.clearForm();
-        this.render();
+        try {
+            const newSheet = await API.createSheet({ name, amount, date });
+            this.clearForm();
+            await this.loadSheets();
+        } catch (error) {
+            console.error('Ошибка создания листа:', error);
+            alert('Ошибка создания листа');
+        }
     },
     
     clearForm() {
@@ -152,8 +256,8 @@ const CocoManyModule = {
         }
         
         container.innerHTML = this.sheets.map(sheet => {
-            const total = sheet.expenses.reduce((sum, e) => sum + e.amount, 0);
-            const balance = sheet.amount - total;
+            const total = sheet.total_expenses || 0;
+            const balance = sheet.balance || sheet.amount;
             
             return `
                 <div class="sheet-card" onclick="CocoManyModule.openSheet(${sheet.id})">
@@ -174,18 +278,22 @@ const CocoManyModule = {
         }).join('');
     },
     
-    openSheet(id) {
-        this.currentSheet = this.sheets.find(s => s.id === id);
-        if (!this.currentSheet) return;
-        
-        document.getElementById('coco-many').style.display = 'none';
-        document.getElementById('sheet-detail').style.display = 'block';
-        this.renderSheetDetail();
+    async openSheet(id) {
+        try {
+            this.currentSheet = await API.getSheet(id);
+            document.getElementById('coco-many').style.display = 'none';
+            document.getElementById('sheet-detail').style.display = 'block';
+            this.renderSheetDetail();
+        } catch (error) {
+            console.error('Ошибка загрузки листа:', error);
+            alert('Ошибка загрузки листа');
+        }
     },
     
     renderSheetDetail() {
         const sheet = this.currentSheet;
-        const total = sheet.expenses.reduce((sum, e) => sum + e.amount, 0);
+        const expenses = sheet.expenses || [];
+        const total = expenses.reduce((sum, e) => sum + e.amount, 0);
         const balance = sheet.amount - total;
         
         document.getElementById('sheet-detail-content').innerHTML = `
@@ -223,9 +331,9 @@ const CocoManyModule = {
             
             <div class="expenses-list">
                 <h3>Расходы</h3>
-                ${sheet.expenses.length === 0 ? 
+                ${expenses.length === 0 ? 
                     '<div class="empty-state"><p>Расходов нет</p></div>' :
-                    sheet.expenses.map(e => `
+                    expenses.map(e => `
                         <div class="expense-item">
                             <div class="expense-info">
                                 <div class="expense-amount">-${e.amount.toLocaleString('ru-RU')} ₽</div>
@@ -248,10 +356,10 @@ const CocoManyModule = {
     backToSheets() {
         document.getElementById('sheet-detail').style.display = 'none';
         document.getElementById('coco-many').style.display = 'block';
-        this.render();
+        this.loadSheets();
     },
     
-    addExpense() {
+    async addExpense() {
         const amount = parseFloat(document.getElementById('expense-amount').value);
         const note = document.getElementById('expense-note').value.trim();
         
@@ -260,14 +368,23 @@ const CocoManyModule = {
             return;
         }
         
-        this.currentSheet.expenses.push({
-            id: Date.now(),
-            amount, note
-        });
-        
-        document.getElementById('expense-amount').value = '';
-        document.getElementById('expense-note').value = '';
-        this.renderSheetDetail();
+        try {
+            await API.createExpense({
+                sheet_id: this.currentSheet.id,
+                amount,
+                note
+            });
+            
+            document.getElementById('expense-amount').value = '';
+            document.getElementById('expense-note').value = '';
+            
+            // Перезагружаем лист
+            this.currentSheet = await API.getSheet(this.currentSheet.id);
+            this.renderSheetDetail();
+        } catch (error) {
+            console.error('Ошибка добавления расхода:', error);
+            alert('Ошибка добавления расхода');
+        }
     },
     
     editSheet() {
@@ -279,19 +396,32 @@ const CocoManyModule = {
         Modal.show('edit-sheet-modal');
         
         // Привязываем сохранение
-        document.querySelector('#edit-sheet-modal .success-btn').onclick = () => {
-            sheet.name = document.getElementById('edit-sheet-name').value.trim() || 'Основной доход';
-            sheet.amount = parseFloat(document.getElementById('edit-income-amount').value) || 0;
-            sheet.date = document.getElementById('edit-income-date').value;
-            Modal.close();
-            this.renderSheetDetail();
+        document.querySelector('#edit-sheet-modal .success-btn').onclick = async () => {
+            const name = document.getElementById('edit-sheet-name').value.trim() || 'Основной доход';
+            const amount = parseFloat(document.getElementById('edit-income-amount').value) || 0;
+            const date = document.getElementById('edit-income-date').value;
+            
+            try {
+                await API.updateSheet(sheet.id, { name, amount, date });
+                Modal.close();
+                this.currentSheet = await API.getSheet(sheet.id);
+                this.renderSheetDetail();
+            } catch (error) {
+                console.error('Ошибка обновления листа:', error);
+                alert('Ошибка обновления листа');
+            }
         };
     },
     
     deleteSheet() {
-        Modal.confirm(`Удалить лист "${this.currentSheet.name}"?`, () => {
-            this.sheets = this.sheets.filter(s => s.id !== this.currentSheet.id);
-            this.backToSheets();
+        Modal.confirm(`Удалить лист "${this.currentSheet.name}"?`, async () => {
+            try {
+                await API.deleteSheet(this.currentSheet.id);
+                this.backToSheets();
+            } catch (error) {
+                console.error('Ошибка удаления листа:', error);
+                alert('Ошибка удаления листа');
+            }
         });
     },
     
@@ -302,19 +432,33 @@ const CocoManyModule = {
         
         Modal.show('edit-expense-modal');
         
-        document.querySelector('#edit-expense-modal .success-btn').onclick = () => {
-            expense.amount = parseFloat(document.getElementById('edit-expense-amount').value) || 0;
-            expense.note = document.getElementById('edit-expense-note').value.trim() || 'Без описания';
-            Modal.close();
-            this.renderSheetDetail();
+        document.querySelector('#edit-expense-modal .success-btn').onclick = async () => {
+            const amount = parseFloat(document.getElementById('edit-expense-amount').value) || 0;
+            const note = document.getElementById('edit-expense-note').value.trim() || 'Без описания';
+            
+            try {
+                await API.updateExpense(expenseId, { amount, note });
+                Modal.close();
+                this.currentSheet = await API.getSheet(this.currentSheet.id);
+                this.renderSheetDetail();
+            } catch (error) {
+                console.error('Ошибка обновления расхода:', error);
+                alert('Ошибка обновления расхода');
+            }
         };
     },
     
     deleteExpense(expenseId) {
         const expense = this.currentSheet.expenses.find(e => e.id === expenseId);
-        Modal.confirm(`Удалить расход "${expense.note}"?`, () => {
-            this.currentSheet.expenses = this.currentSheet.expenses.filter(e => e.id !== expenseId);
-            this.renderSheetDetail();
+        Modal.confirm(`Удалить расход "${expense.note}"?`, async () => {
+            try {
+                await API.deleteExpense(expenseId);
+                this.currentSheet = await API.getSheet(this.currentSheet.id);
+                this.renderSheetDetail();
+            } catch (error) {
+                console.error('Ошибка удаления расхода:', error);
+                alert('Ошибка удаления расхода');
+            }
         });
     }
 };
@@ -323,8 +467,9 @@ const CocoManyModule = {
 const ScaleCalcModule = {
     history: [],
     
-    init() {
+    async init() {
         this.bindEvents();
+        await this.loadHistory();
     },
     
     bindEvents() {
@@ -347,9 +492,17 @@ const ScaleCalcModule = {
         
         // Очистка истории
         document.querySelector('.clear-btn')?.addEventListener('click', () => {
-            this.history = [];
-            this.updateHistory();
+            this.clearHistory();
         });
+    },
+    
+    async loadHistory() {
+        try {
+            this.history = await API.getCalculatorHistory();
+            this.updateHistory();
+        } catch (error) {
+            console.error('Ошибка загрузки истории:', error);
+        }
     },
     
     calcHeight() {
@@ -392,13 +545,25 @@ const ScaleCalcModule = {
         el.className = 'result empty';
     },
     
-    addHistory(calc) {
+    async addHistory(calc) {
         if (this.history[0] === calc) return;
         
-        this.history.unshift(calc);
-        if (this.history.length > 10) this.history = this.history.slice(0, 10);
-        
-        this.updateHistory();
+        try {
+            await API.addCalculatorHistory(calc);
+            await this.loadHistory();
+        } catch (error) {
+            console.error('Ошибка добавления в историю:', error);
+        }
+    },
+    
+    async clearHistory() {
+        try {
+            await API.clearCalculatorHistory();
+            this.history = [];
+            this.updateHistory();
+        } catch (error) {
+            console.error('Ошибка очистки истории:', error);
+        }
     },
     
     updateHistory() {
