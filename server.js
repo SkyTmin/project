@@ -2,6 +2,7 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const cors = require('cors');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,10 +12,30 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Создаем директорию для базы данных если не существует
-const dbPath = process.env.NODE_ENV === 'production' 
-    ? '/tmp/database.db'  // Для некоторых хостингов
-    : path.join(__dirname, 'database.db');
+// Определяем путь к базе данных
+let dbPath;
+
+if (process.env.RAILWAY_VOLUME_MOUNT_PATH) {
+    // Если есть Railway Volume - используем его
+    const volumePath = process.env.RAILWAY_VOLUME_MOUNT_PATH;
+    
+    // Создаем директорию если не существует
+    if (!fs.existsSync(volumePath)) {
+        fs.mkdirSync(volumePath, { recursive: true });
+    }
+    
+    dbPath = path.join(volumePath, 'database.db');
+    console.log(`📁 Используется Railway Volume: ${dbPath}`);
+} else if (process.env.NODE_ENV === 'production') {
+    // Fallback для production без volume
+    dbPath = '/tmp/database.db';
+    console.log(`⚠️  Используется временное хранилище: ${dbPath}`);
+    console.log(`⚠️  ВНИМАНИЕ: Данные будут удаляться при перезапуске!`);
+} else {
+    // Для локальной разработки
+    dbPath = path.join(__dirname, 'database.db');
+    console.log(`💻 Локальная разработка: ${dbPath}`);
+}
 
 // Инициализация базы данных
 const db = new sqlite3.Database(dbPath, (err) => {
@@ -22,6 +43,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
         console.error('Ошибка подключения к базе данных:', err);
     } else {
         console.log('✅ Подключение к SQLite базе данных успешно');
+        console.log(`📍 Путь к БД: ${dbPath}`);
     }
 });
 
@@ -326,7 +348,12 @@ app.delete('/api/calculator/history', (req, res) => {
 
 // Health check для хостинга
 app.get('/health', (req, res) => {
-    res.json({ status: 'OK', timestamp: new Date().toISOString() });
+    res.json({ 
+        status: 'OK', 
+        timestamp: new Date().toISOString(),
+        database: dbPath,
+        volume: process.env.RAILWAY_VOLUME_MOUNT_PATH || 'not configured'
+    });
 });
 
 // Главная страница
@@ -344,6 +371,12 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Сервер запущен на порту ${PORT}`);
     console.log(`📱 Откройте http://localhost:${PORT}`);
     console.log(`🗄️ База данных: ${dbPath}`);
+    
+    if (process.env.RAILWAY_VOLUME_MOUNT_PATH) {
+        console.log(`💾 Railway Volume подключен: ${process.env.RAILWAY_VOLUME_MOUNT_PATH}`);
+    } else {
+        console.log(`⚠️  Railway Volume не настроен - данные могут потеряться при перезапуске`);
+    }
 });
 
 // Graceful shutdown
