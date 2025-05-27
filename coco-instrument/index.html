@@ -205,47 +205,85 @@
     </div>
 
     <!-- Scripts -->
-    <script src="js/core/EventBus.js"></script>
-    <script src="js/core/StateManager.js"></script>
-    <script src="js/core/APIClient.js"></script>
-    <script src="js/core/ModuleManager.js"></script>
     <script>
-        // Ждем загрузки всех core скриптов перед загрузкой модулей
-        document.addEventListener('DOMContentLoaded', () => {
-            // Теперь загружаем модули
-            const moduleScripts = [
-                'js/modules/AuthModule.js',
-                'js/modules/CocoMoneyModule.js',
-                'js/app.js'
-            ];
-            
-            let loadedScripts = 0;
-            
-            moduleScripts.forEach((src, index) => {
+        // Функция для безопасной загрузки скриптов
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
                 const script = document.createElement('script');
                 script.src = src;
                 script.onload = () => {
-                    loadedScripts++;
-                    if (loadedScripts === moduleScripts.length) {
-                        // Все скрипты загружены, инициализируем приложение
-                        setTimeout(async () => {
-                            try {
-                                if (window.CocoApp && typeof window.CocoApp.init === 'function') {
-                                    await window.CocoApp.init();
-                                } else {
-                                    console.error('CocoApp not available for initialization');
-                                }
-                            } catch (error) {
-                                console.error('Error during app initialization:', error);
-                            }
-                        }, 100);
-                    }
+                    console.log(`Script loaded: ${src}`);
+                    resolve();
                 };
                 script.onerror = (error) => {
                     console.error(`Failed to load script: ${src}`, error);
+                    reject(error);
                 };
                 document.head.appendChild(script);
             });
+        }
+
+        // Последовательная загрузка core скриптов
+        async function loadCoreScripts() {
+            try {
+                await loadScript('js/core/EventBus.js');
+                await loadScript('js/core/StateManager.js');
+                await loadScript('js/core/APIClient.js');
+                await loadScript('js/core/ModuleManager.js');
+                return true;
+            } catch (error) {
+                console.error('Failed to load core scripts:', error);
+                return false;
+            }
+        }
+
+        // Загрузка модулей
+        async function loadModules() {
+            try {
+                await loadScript('js/modules/AuthModule.js');
+                await loadScript('js/modules/CocoMoneyModule.js');
+                return true;
+            } catch (error) {
+                console.error('Failed to load modules:', error);
+                return false;
+            }
+        }
+
+        // Инициализация приложения
+        async function initializeApp() {
+            try {
+                await loadScript('js/app.js');
+                
+                // Ждем немного для создания экземпляра
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                if (window.CocoApp) {
+                    await window.CocoApp.init();
+                } else {
+                    console.error('CocoApp not available');
+                }
+            } catch (error) {
+                console.error('Failed to initialize app:', error);
+            }
+        }
+
+        // Главная функция инициализации
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('DOM loaded, starting initialization...');
+            
+            const coreLoaded = await loadCoreScripts();
+            if (!coreLoaded) {
+                document.body.innerHTML = '<div style="text-align:center; padding:50px; color:red;">Ошибка загрузки системных компонентов</div>';
+                return;
+            }
+
+            const modulesLoaded = await loadModules();
+            if (!modulesLoaded) {
+                document.body.innerHTML = '<div style="text-align:center; padding:50px; color:red;">Ошибка загрузки модулей</div>';
+                return;
+            }
+
+            await initializeApp();
         });
     </script>
 </body>
