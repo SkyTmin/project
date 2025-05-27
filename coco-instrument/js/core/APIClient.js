@@ -49,7 +49,18 @@ class APIClient {
             window.EventBus.emit(window.Events.UI_SHOW_LOADING);
             
             const response = await fetch(fullUrl, config);
-            const data = await response.json();
+            
+            // Проверяем content-type перед парсингом JSON
+            const contentType = response.headers.get('content-type');
+            let data;
+            
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                // Если это не JSON, читаем как текст
+                const text = await response.text();
+                throw new Error(`Server returned non-JSON response: ${response.status}`);
+            }
             
             if (!response.ok) {
                 throw new Error(data.message || `HTTP ${response.status}`);
@@ -60,7 +71,10 @@ class APIClient {
             
         } catch (error) {
             window.EventBus.emit(window.Events.UI_HIDE_LOADING);
-            window.EventBus.emit(window.Events.UI_SHOW_ERROR, error.message);
+            // Не показываем ошибки для health check
+            if (!url.includes('/health')) {
+                window.EventBus.emit(window.Events.UI_SHOW_ERROR, error.message);
+            }
             throw error;
         }
     }
