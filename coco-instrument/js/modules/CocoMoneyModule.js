@@ -604,18 +604,14 @@ const CocoMoneyModule = {
     }
 };
 
-// Регистрируем модуль после загрузки ModuleManager
-if (typeof window !== 'undefined') {
+// Регистрируем модуль сразу (ModuleManager уже должен быть загружен)
+try {
     if (window.ModuleManager) {
         window.ModuleManager.register(CocoMoneyModule);
+        console.log('CocoMoneyModule registered successfully');
     } else {
-        // Ждем загрузки ModuleManager
-        document.addEventListener('DOMContentLoaded', () => {
-            if (window.ModuleManager) {
-                window.ModuleManager.register(CocoMoneyModule);
-            } else {
-                console.error('ModuleManager not found when registering CocoMoneyModule');
-            }
-        });
+        console.error('ModuleManager not available when loading CocoMoneyModule');
     }
+} catch (error) {
+    console.error('Error registering CocoMoneyModule:', error);
 }
