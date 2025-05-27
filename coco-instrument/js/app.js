@@ -367,17 +367,10 @@ class CocoInstrumentApp {
     }
 }
 
-// Инициализация приложения при загрузке DOM
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log('DOM loaded, creating Coco Instrument instance...');
-    
-    // Создаем глобальный экземпляр приложения
-    window.CocoApp = new CocoInstrumentApp();
-    
-    // Не инициализируем сразу - это будет сделано после загрузки всех модулей
-});
+// Создаем глобальный экземпляр приложения
+window.CocoApp = new CocoInstrumentApp();
 
-// Функция для ручной инициализации (вызывается после загрузки всех скриптов)
+// Функция для ручной инициализации (вызывается из HTML)
 window.initCocoApp = async function() {
     if (window.CocoApp) {
         await window.CocoApp.init();
