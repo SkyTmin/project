@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coco Instrument</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#007bff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Coco Instrument">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/auth.css">
+    <link rel="stylesheet" href="styles/coco-money.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="loading-screen">
+            <div class="loading-spinner"></div>
+            <h2>Coco Instrument</h2>
+        </div>
+
+        <!-- Auth Module -->
+        <div id="auth-module" class="module hidden">
+            <div class="auth-container">
+                <div class="auth-header">
+                    <h1>Coco Instrument</h1>
+                    <p>Ваш помощник в управлении финансами</p>
+                </div>
+
+                <!-- Login Form -->
+                <div id="login-form" class="auth-form">
+                    <h2>Вход в систему</h2>
+                    <form id="login-form-element">
+                        <div class="form-group">
+                            <label for="login-email">Email</label>
+                            <input type="email" id="login-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Пароль</label>
+                            <input type="password" id="login-password" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Войти</button>
+                    </form>
+                    <p class="auth-switch">
+                        Нет аккаунта? <a href="#" id="show-register">Зарегистрироваться</a>
+                    </p>
+                </div>
+
+                <!-- Register Form -->
+                <div id="register-form" class="auth-form hidden">
+                    <h2>Регистрация</h2>
+                    <form id="register-form-element">
+                        <div class="form-group">
+                            <label for="register-email">Email</label>
+                            <input type="email" id="register-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password">Пароль</label>
+                            <input type="password" id="register-password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-verification-date">Вчерашняя дата</label>
+                            <input type="date" id="register-verification-date" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Зарегистрироваться</button>
+                    </form>
+                    <p class="auth-switch">
+                        Уже есть аккаунт? <a href="#" id="show-login">Войти</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App -->
+        <div id="main-app" class="module hidden">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-content">
+                    <h1>Coco Instrument</h1>
+                    <div class="header-actions">
+                        <span id="user-email" class="user-info"></span>
+                        <button id="logout-btn" class="btn-secondary">Выйти</button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Navigation -->
+            <nav class="app-nav">
+                <button id="nav-coco-money" class="nav-btn active">Coco Money</button>
+            </nav>
+
+            <!-- Coco Money Module -->
+            <div id="coco-money-module" class="tool-module active">
+                <!-- Income Sheets Tabs -->
+                <div class="tabs-container">
+                    <div class="tabs-header">
+                        <div id="income-tabs" class="tabs"></div>
+                        <button id="add-sheet-btn" class="add-tab-btn">+</button>
+                    </div>
+                </div>
+
+                <!-- Sheet Content -->
+                <div id="sheet-content" class="sheet-content">
+                    <!-- Sheet Header -->
+                    <div class="sheet-header">
+                        <div class="sheet-info">
+                            <h2 id="sheet-title">Выберите лист доходов</h2>
+                            <div class="sheet-balance">
+                                <span>Баланс: </span>
+                                <span id="sheet-balance" class="balance-amount">0 ₽</span>
+                            </div>
+                        </div>
+                        <div class="sheet-actions">
+                            <button id="edit-sheet-btn" class="btn-secondary hidden">Редактировать</button>
+                            <button id="save-sheet-btn" class="btn-primary hidden">Сохранить</button>
+                            <button id="cancel-edit-btn" class="btn-secondary hidden">Отменить</button>
+                        </div>
+                    </div>
+
+                    <!-- Sheet Details (Edit Mode) -->
+                    <div id="sheet-edit-form" class="sheet-edit-form hidden">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="edit-sheet-name">Название</label>
+                                <input type="text" id="edit-sheet-name">
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-sheet-income">Доход</label>
+                                <input type="number" id="edit-sheet-income" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-sheet-date">Дата</label>
+                                <input type="date" id="edit-sheet-date">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Expenses Section -->
+                    <div id="expenses-section" class="expenses-section hidden">
+                        <div class="section-header">
+                            <h3>Расходы</h3>
+                            <button id="add-expense-btn" class="btn-primary">Добавить расход</button>
+                        </div>
+
+                        <!-- Add Expense Form -->
+                        <div id="add-expense-form" class="expense-form hidden">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="expense-amount">Сумма</label>
+                                    <input type="number" id="expense-amount" step="0.01" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="expense-note">Примечание</label>
+                                    <input type="text" id="expense-note">
+                                </div>
+                                <div class="form-actions">
+                                    <button id="save-expense-btn" class="btn-primary">Сохранить</button>
+                                    <button id="cancel-expense-btn" class="btn-secondary">Отменить</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Expenses List -->
+                        <div id="expenses-list" class="expenses-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Sheet Modal -->
+        <div id="add-sheet-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Создать лист доходов</h3>
+                    <button id="close-modal-btn" class="close-btn">&times;</button>
+                </div>
+                <form id="add-sheet-form">
+                    <div class="form-group">
+                        <label for="new-sheet-name">Название</label>
+                        <input type="text" id="new-sheet-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-sheet-income">Доход</label>
+                        <input type="number" id="new-sheet-income" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-sheet-date">Дата</label>
+                        <input type="date" id="new-sheet-date" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Создать</button>
+                        <button type="button" id="cancel-sheet-btn" class="btn-secondary">Отменить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/core/EventBus.js"></script>
+    <script src="js/core/StateManager.js"></script>
+    <script src="js/core/APIClient.js"></script>
+    <script src="js/core/ModuleManager.js"></script>
+    <script src="js/modules/AuthModule.js"></script>
+    <script src="js/modules/CocoMoneyModule.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
