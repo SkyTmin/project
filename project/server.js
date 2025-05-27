@@ -7,11 +7,6 @@ const morgan = require('morgan');
 const path = require('path');
 require('dotenv').config();
 
-// Импорт маршрутов
-const authRoutes = require('./routes/auth');
-const incomeSheetsRoutes = require('./routes/incomeSheets');
-const expensesRoutes = require('./routes/expenses');
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -29,6 +24,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // API маршруты
+const authRoutes = require('./routes/auth');
+const incomeSheetsRoutes = require('./routes/incomeSheets');
+const expensesRoutes = require('./routes/expenses');
+
 app.use('/api/auth', authRoutes);
 app.use('/api/income-sheets', incomeSheetsRoutes);
 app.use('/api/expenses', expensesRoutes);
