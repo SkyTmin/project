@@ -310,15 +310,34 @@ const AuthModule = {
      */
     destroy() {
         // Отписываемся от событий
-        this.elements.loginFormElement.removeEventListener('submit', this.handleLogin);
-        this.elements.registerFormElement.removeEventListener('submit', this.handleRegister);
+        if (this.elements.loginFormElement) {
+            this.elements.loginFormElement.removeEventListener('submit', this.handleLogin);
+        }
+        if (this.elements.registerFormElement) {
+            this.elements.registerFormElement.removeEventListener('submit', this.handleRegister);
+        }
         
-        window.EventBus.off(window.Events.AUTH_LOGIN_SUCCESS, this.onAuthSuccess);
-        window.EventBus.off(window.Events.AUTH_REGISTER_SUCCESS, this.onAuthSuccess);
-        window.EventBus.off(window.Events.AUTH_LOGIN_FAILED, this.onAuthError);
-        window.EventBus.off(window.Events.AUTH_REGISTER_FAILED, this.onAuthError);
+        if (window.EventBus) {
+            window.EventBus.off(window.Events.AUTH_LOGIN_SUCCESS, this.onAuthSuccess);
+            window.EventBus.off(window.Events.AUTH_REGISTER_SUCCESS, this.onAuthSuccess);
+            window.EventBus.off(window.Events.AUTH_LOGIN_FAILED, this.onAuthError);
+            window.EventBus.off(window.Events.AUTH_REGISTER_FAILED, this.onAuthError);
+        }
     }
 };
 
-// Регистрируем модуль
-window.ModuleManager.register(AuthModule);
+// Регистрируем модуль после загрузки ModuleManager
+if (typeof window !== 'undefined') {
+    if (window.ModuleManager) {
+        window.ModuleManager.register(AuthModule);
+    } else {
+        // Ждем загрузки ModuleManager
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.ModuleManager) {
+                window.ModuleManager.register(AuthModule);
+            } else {
+                console.error('ModuleManager not found when registering AuthModule');
+            }
+        });
+    }
+}
