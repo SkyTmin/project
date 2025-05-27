@@ -326,18 +326,14 @@ const AuthModule = {
     }
 };
 
-// Регистрируем модуль после загрузки ModuleManager
-if (typeof window !== 'undefined') {
+// Регистрируем модуль сразу (ModuleManager уже должен быть загружен)
+try {
     if (window.ModuleManager) {
         window.ModuleManager.register(AuthModule);
+        console.log('AuthModule registered successfully');
     } else {
-        // Ждем загрузки ModuleManager
-        document.addEventListener('DOMContentLoaded', () => {
-            if (window.ModuleManager) {
-                window.ModuleManager.register(AuthModule);
-            } else {
-                console.error('ModuleManager not found when registering AuthModule');
-            }
-        });
+        console.error('ModuleManager not available when loading AuthModule');
     }
+} catch (error) {
+    console.error('Error registering AuthModule:', error);
 }
