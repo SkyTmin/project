@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Coco Instrument</title>
+    <style>
+        body {
+            font-family: monospace;
+            margin: 20px;
+            background: #1e1e1e;
+            color: #fff;
+        }
+        .log {
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: #4caf50; }
+        .error { color: #f44336; }
+        .warning { color: #ff9800; }
+        .info { color: #2196f3; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Coco Instrument Debug Console</h1>
+    
+    <div class="status">
+        <strong>Status:</strong> <span id="status">Initializing...</span>
+    </div>
+
+    <div class="controls">
+        <button onclick="startDebugSequence()">Start Debug Sequence</button>
+        <button onclick="clearLog()">Clear Log</button>
+        <button onclick="testComponents()">Test Components</button>
+        <button onclick="openMainApp()">Open Main App</button>
+    </div>
+
+    <div id="log" class="log"></div>
+
+    <script>
+        let logCount = 0;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = type;
+            logEntry.innerHTML = `[${timestamp}] ${++logCount}: ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function setStatus(status, type = 'info') {
+            const statusSpan = document.getElementById('status');
+            statusSpan.textContent = status;
+            statusSpan.className = type;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            logCount = 0;
+        }
+
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                log(`Loading script: ${src}`, 'info');
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = () => {
+                    log(`✓ Successfully loaded: ${src}`, 'success');
+                    resolve();
+                };
+                script.onerror = (error) => {
+                    log(`✗ Failed to load: ${src}`, 'error');
+                    reject(error);
+                };
+                document.head.appendChild(script);
+            });
+        }
+
+        async function startDebugSequence() {
+            clearLog();
+            setStatus('Loading...', 'warning');
+            
+            try {
+                // Step 1: Load Core Scripts
+                log('=== LOADING CORE SCRIPTS ===', 'info');
+                await loadScript('js/core/EventBus.js');
+                await loadScript('js/core/StateManager.js');
+                await loadScript('js/core/APIClient.js');
+                await loadScript('js/core/ModuleManager.js');
+                
+                // Step 2: Verify Core Components
+                log('=== VERIFYING CORE COMPONENTS ===', 'info');
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                if (window.EventBus) {
+                    log('✓ EventBus available', 'success');
+                } else {
+                    log('✗ EventBus not available', 'error');
+                }
+                
+                if (window.StateManager) {
+                    log('✓ StateManager available', 'success');
+                } else {
+                    log('✗ StateManager not available', 'error');
+                }
+                
+                if (window.APIClient) {
+                    log('✓ APIClient available', 'success');
+                    // Test health check
+                    try {
+                        const health = await window.APIClient.healthCheck();
+                        log(`API Health: ${JSON.stringify(health)}`, 'info');
+                    } catch (error) {
+                        log(`API Health Check Failed: ${error.message}`, 'warning');
+                    }
+                } else {
+                    log('✗ APIClient not available', 'error');
+                }
+                
+                if (window.ModuleManager) {
+                    log('✓ ModuleManager available', 'success');
+                    const stats = window.ModuleManager.getStats();
+                    log(`Module stats: ${JSON.stringify(stats)}`, 'info');
+                } else {
+                    log('✗ ModuleManager not available', 'error');
+                }
+
+                // Step 3: Load Modules
+                log('=== LOADING MODULES ===', 'info');
+                await loadScript('js/modules/AuthModule.js');
+                await loadScript('js/modules/CocoMoneyModule.js');
+                
+                // Step 4: Verify Modules
+                await new Promise(resolve => setTimeout(resolve, 100));
+                if (window.ModuleManager) {
+                    const updatedStats = window.ModuleManager.getStats();
+                    log(`Updated module stats: ${JSON.stringify(updatedStats)}`, 'success');
+                }
+
+                // Step 5: Load App
+                log('=== LOADING APPLICATION ===', 'info');
+                await loadScript('js/app.js');
+                
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                if (window.CocoApp) {
+                    log('✓ CocoApp instance created', 'success');
+                    
+                    // Step 6: Initialize App
+                    log('=== INITIALIZING APPLICATION ===', 'info');
+                    await window.CocoApp.init();
+                    
+                    log('✓ Application initialized successfully!', 'success');
+                    setStatus('Ready', 'success');
+                } else {
+                    log('✗ CocoApp not available', 'error');
+                    setStatus('Failed', 'error');
+                }
+
+            } catch (error) {
+                log(`Fatal error: ${error.message}`, 'error');
+                setStatus('Error', 'error');
+            }
+        }
+
+        async function testComponents() {
+            if (!window.StateManager) {
+                log('StateManager not available for testing', 'error');
+                return;
+            }
+
+            log('=== TESTING COMPONENTS ===', 'info');
+            
+            // Test StateManager
+            try {
+                window.StateManager.setState('testKey', 'testValue');
+                const value = window.StateManager.getState('testKey');
+                if (value === 'testValue') {
+                    log('✓ StateManager working correctly', 'success');
+                } else {
+                    log('✗ StateManager test failed', 'error');
+                }
+            } catch (error) {
+                log(`StateManager test error: ${error.message}`, 'error');
+            }
+
+            // Test EventBus
+            try {
+                let eventReceived = false;
+                window.EventBus.on('test-event', () => {
+                    eventReceived = true;
+                });
+                window.EventBus.emit('test-event');
+                if (eventReceived) {
+                    log('✓ EventBus working correctly', 'success');
+                } else {
+                    log('✗ EventBus test failed', 'error');
+                }
+            } catch (error) {
+                log(`EventBus test error: ${error.message}`, 'error');
+            }
+        }
+
+        function openMainApp() {
+            window.open('index.html', '_blank');
+        }
+
+        // Auto-start on load
+        window.addEventListener('load', () => {
+            log('Debug console loaded', 'info');
+            setStatus('Ready for debugging', 'info');
+        });
+    </script>
+</body>
+</html>
