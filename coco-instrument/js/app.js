@@ -14,6 +14,19 @@ class CocoInstrumentApp {
         console.log('Initializing Coco Instrument App...');
         
         try {
+            // Проверяем доступность необходимых компонентов
+            if (!window.ModuleManager) {
+                throw new Error('ModuleManager not available');
+            }
+            
+            if (!window.StateManager) {
+                throw new Error('StateManager not available');
+            }
+            
+            if (!window.EventBus) {
+                throw new Error('EventBus not available');
+            }
+            
             // Показываем экран загрузки
             this.showLoadingScreen();
             
@@ -40,7 +53,8 @@ class CocoInstrumentApp {
             
         } catch (error) {
             console.error('Error initializing app:', error);
-            this.showError('Ошибка при инициализации приложения');
+            this.showError('Ошибка при инициализации приложения: ' + error.message);
+            this.hideLoadingScreen();
         }
     }
 
@@ -355,14 +369,20 @@ class CocoInstrumentApp {
 
 // Инициализация приложения при загрузке DOM
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('DOM loaded, initializing Coco Instrument...');
+    console.log('DOM loaded, creating Coco Instrument instance...');
     
     // Создаем глобальный экземпляр приложения
     window.CocoApp = new CocoInstrumentApp();
     
-    // Инициализируем приложение
-    await window.CocoApp.init();
+    // Не инициализируем сразу - это будет сделано после загрузки всех модулей
 });
+
+// Функция для ручной инициализации (вызывается после загрузки всех скриптов)
+window.initCocoApp = async function() {
+    if (window.CocoApp) {
+        await window.CocoApp.init();
+    }
+};
 
 // Регистрируем Service Worker для PWA (если доступен)
 if ('serviceWorker' in navigator) {
