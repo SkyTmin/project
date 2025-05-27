@@ -589,9 +589,12 @@ const CocoMoneyModule = {
      */
     destroy() {
         // Отписываемся от событий
-        this.elements.logoutBtn.removeEventListener('click', this.handleLogout);
-        this.elements.addSheetBtn.removeEventListener('click', this.showAddSheetModal);
-        // ... остальные обработчики
+        if (this.elements.logoutBtn) {
+            this.elements.logoutBtn.removeEventListener('click', this.handleLogout);
+        }
+        if (this.elements.addSheetBtn) {
+            this.elements.addSheetBtn.removeEventListener('click', this.showAddSheetModal);
+        }
         
         // Очищаем состояние
         this.state = {
@@ -601,5 +604,18 @@ const CocoMoneyModule = {
     }
 };
 
-// Регистрируем модуль
-window.ModuleManager.register(CocoMoneyModule);
+// Регистрируем модуль после загрузки ModuleManager
+if (typeof window !== 'undefined') {
+    if (window.ModuleManager) {
+        window.ModuleManager.register(CocoMoneyModule);
+    } else {
+        // Ждем загрузки ModuleManager
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.ModuleManager) {
+                window.ModuleManager.register(CocoMoneyModule);
+            } else {
+                console.error('ModuleManager not found when registering CocoMoneyModule');
+            }
+        });
+    }
+}
