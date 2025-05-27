@@ -209,8 +209,44 @@
     <script src="js/core/StateManager.js"></script>
     <script src="js/core/APIClient.js"></script>
     <script src="js/core/ModuleManager.js"></script>
-    <script src="js/modules/AuthModule.js"></script>
-    <script src="js/modules/CocoMoneyModule.js"></script>
-    <script src="js/app.js"></script>
+    <script>
+        // Ждем загрузки всех core скриптов перед загрузкой модулей
+        document.addEventListener('DOMContentLoaded', () => {
+            // Теперь загружаем модули
+            const moduleScripts = [
+                'js/modules/AuthModule.js',
+                'js/modules/CocoMoneyModule.js',
+                'js/app.js'
+            ];
+            
+            let loadedScripts = 0;
+            
+            moduleScripts.forEach((src, index) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = () => {
+                    loadedScripts++;
+                    if (loadedScripts === moduleScripts.length) {
+                        // Все скрипты загружены, инициализируем приложение
+                        setTimeout(async () => {
+                            try {
+                                if (window.CocoApp && typeof window.CocoApp.init === 'function') {
+                                    await window.CocoApp.init();
+                                } else {
+                                    console.error('CocoApp not available for initialization');
+                                }
+                            } catch (error) {
+                                console.error('Error during app initialization:', error);
+                            }
+                        }, 100);
+                    }
+                };
+                script.onerror = (error) => {
+                    console.error(`Failed to load script: ${src}`, error);
+                };
+                document.head.appendChild(script);
+            });
+        });
+    </script>
 </body>
 </html>
