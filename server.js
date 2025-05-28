@@ -15,6 +15,9 @@ const { errorHandler } = require('./middleware/errorHandler');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy для Railway
+app.set('trust proxy', true);
+
 // Middleware для безопасности
 app.use(helmet({
     contentSecurityPolicy: {
@@ -44,7 +47,9 @@ app.use(cors({
 // Rate limiting
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 минут
-    max: 100 // максимум 100 запросов
+    max: 100, // максимум 100 запросов
+    standardHeaders: true,
+    legacyHeaders: false,
 });
 app.use('/api', limiter);
 
