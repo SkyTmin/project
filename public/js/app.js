@@ -31,7 +31,7 @@
             
             if (isAuthRoute && isAuthenticated) {
                 // Если пользователь аутентифицирован, перенаправляем на главную
-                window.router.navigate('/coco-money');
+                window.router.navigate('/home');
                 return false;
             }
             
@@ -42,6 +42,11 @@
         const authModule = window.moduleManager.get('auth');
         if (authModule && authModule.init) {
             authModule.init();
+        }
+        
+        const homeModule = window.moduleManager.get('home');
+        if (homeModule && homeModule.init) {
+            homeModule.init();
         }
         
         const cocoMoneyModule = window.moduleManager.get('coco-money');
@@ -64,11 +69,21 @@
     function setupRoutes() {
         // Маршрут аутентификации
         window.router.register('/', async () => {
-            await window.moduleManager.activateModule('auth');
+            const isAuthenticated = await checkAuthentication();
+            if (isAuthenticated) {
+                await window.moduleManager.activateModule('home');
+            } else {
+                await window.moduleManager.activateModule('auth');
+            }
         });
         
         window.router.register('/auth', async () => {
             await window.moduleManager.activateModule('auth');
+        });
+        
+        // Маршрут главной страницы
+        window.router.register('/home', async () => {
+            await window.moduleManager.activateModule('home');
         });
         
         // Маршрут Coco Money
