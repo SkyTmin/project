@@ -6,16 +6,12 @@ const AuthModule = {
     
     // Инициализация модуля
     init() {
+        // Проверяем, что модуль еще не инициализирован
+        if (this.initialized) return;
+        
         this.setupEventListeners();
         this.setupFormHandlers();
-        
-        // Устанавливаем вчерашнюю дату по умолчанию
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const dateInput = document.getElementById('register-date');
-        if (dateInput) {
-            dateInput.value = yesterday.toISOString().split('T')[0];
-        }
+        this.initialized = true;
     },
     
     // Рендеринг модуля
@@ -101,7 +97,7 @@ const AuthModule = {
             this.showToast('Вход выполнен успешно', 'success');
             
             // Переходим к основному приложению
-            window.router.navigate('/coco-money');
+            window.router.navigate('/home');
         } catch (error) {
             this.showToast(error.message || 'Ошибка входа', 'error');
         } finally {
@@ -143,7 +139,7 @@ const AuthModule = {
             this.showToast('Регистрация выполнена успешно', 'success');
             
             // Переходим к основному приложению
-            window.router.navigate('/coco-money');
+            window.router.navigate('/home');
         } catch (error) {
             this.showToast(error.message || 'Ошибка регистрации', 'error');
         } finally {
