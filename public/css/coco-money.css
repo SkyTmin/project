@@ -267,6 +267,22 @@
   margin-bottom: 1rem;
 }
 
+/* Модальное окно подтверждения */
+#confirm-modal .modal-content {
+  max-width: 400px;
+}
+
+#confirm-modal h3 {
+  color: var(--dark);
+  margin-bottom: 1rem;
+}
+
+#confirm-modal p {
+  color: var(--gray);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
 /* Адаптивность */
 @media (max-width: 768px) {
   .balance-header {
@@ -301,5 +317,10 @@
   .income-tabs {
     overflow-x: scroll;
     -webkit-overflow-scrolling: touch;
+  }
+  
+  .fab {
+    bottom: 1rem;
+    right: 1rem;
   }
 }
