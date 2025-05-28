@@ -24,6 +24,7 @@
         <nav id="main-nav" class="nav hidden">
             <div class="nav-brand">Coco Instrument</div>
             <div class="nav-links">
+                <a href="#/" class="nav-link">Главная</a>
                 <a href="#/coco-money" class="nav-link">Coco Money</a>
             </div>
             <div class="nav-user">
@@ -60,12 +61,28 @@
                         <input type="email" id="register-email" placeholder="Email" required>
                         <input type="password" id="register-password" placeholder="Пароль" required>
                         <input type="date" id="register-date" placeholder="Вчерашняя дата" required>
-                        <small class="date-hint">Введите вчерашнюю дату для подтверждения</small>
+                        <small class="date-hint">Сегодняшняя дата минус один день</small>
                         <button type="submit" class="btn-primary">Зарегистрироваться</button>
                         <p class="auth-switch">
                             Есть аккаунт? <a href="#" id="show-login">Войти</a>
                         </p>
                     </form>
+                </div>
+            </div>
+
+            <!-- Главная страница -->
+            <div id="home-module" class="module hidden">
+                <div class="home-container">
+                    <h1>Добро пожаловать в Coco Instrument</h1>
+                    <p class="home-description">Выберите инструмент для работы</p>
+                    
+                    <div class="tools-grid">
+                        <a href="#/coco-money" class="tool-card">
+                            <div class="tool-icon">💰</div>
+                            <h3>Coco Money</h3>
+                            <p>Управление доходами и расходами</p>
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -86,7 +103,7 @@
                         <div id="tabs-container" class="tabs-container">
                             <!-- Динамически создаваемые вкладки -->
                         </div>
-                        <button id="add-sheet-btn" class="tab-add">+</button>
+                        <button id="add-sheet-btn" class="tab-add hidden">+</button>
                     </div>
 
                     <!-- Контент активного листа -->
@@ -95,7 +112,10 @@
                         <div id="sheet-info" class="sheet-info">
                             <div class="sheet-header">
                                 <h3 id="sheet-name">Выберите лист</h3>
-                                <button id="edit-sheet-btn" class="btn-edit hidden">Редактировать</button>
+                                <div class="sheet-actions">
+                                    <button id="export-sheet-btn" class="btn-icon" title="Экспорт">📄</button>
+                                    <button id="edit-sheet-btn" class="btn-edit hidden">Редактировать</button>
+                                </div>
                             </div>
                             <div class="sheet-details">
                                 <div class="detail-item">
@@ -141,7 +161,16 @@
                                 <!-- Динамически создаваемые расходы -->
                             </div>
                         </div>
+
+                        <!-- Пустое состояние -->
+                        <div id="empty-state" class="empty-state">
+                            <p>У вас пока нет листов доходов</p>
+                            <button id="create-first-sheet" class="btn-primary">Создать первый лист</button>
+                        </div>
                     </div>
+
+                    <!-- Кнопка добавления листа (плавающая) -->
+                    <button id="fab-add-sheet" class="fab hidden" title="Добавить лист доходов">+</button>
 
                     <!-- Форма создания нового листа -->
                     <div id="new-sheet-modal" class="modal hidden">
@@ -156,6 +185,31 @@
                                     <button type="button" id="cancel-new-sheet" class="btn-secondary">Отмена</button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+
+                    <!-- Модальное окно подтверждения -->
+                    <div id="confirm-modal" class="modal hidden">
+                        <div class="modal-content">
+                            <h3 id="confirm-title">Подтверждение</h3>
+                            <p id="confirm-message"></p>
+                            <div class="form-actions">
+                                <button id="confirm-yes" class="btn-danger">Да</button>
+                                <button id="confirm-no" class="btn-secondary">Отмена</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Модальное окно экспорта -->
+                    <div id="export-modal" class="modal hidden">
+                        <div class="modal-content">
+                            <h3>Экспорт данных</h3>
+                            <div id="export-preview" class="export-preview"></div>
+                            <div class="form-actions">
+                                <button id="copy-export" class="btn-primary">Копировать</button>
+                                <button id="download-export" class="btn-primary">Скачать</button>
+                                <button id="close-export" class="btn-secondary">Закрыть</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -178,6 +232,7 @@
     <script src="/js/core/Router.js"></script>
     <script src="/js/core/ModuleManager.js"></script>
     <script src="/js/modules/AuthModule.js"></script>
+    <script src="/js/modules/HomeModule.js"></script>
     <script src="/js/modules/CocoMoneyModule.js"></script>
     <script src="/js/app.js"></script>
 </body>
