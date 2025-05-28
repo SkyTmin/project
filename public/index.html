@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#007bff">
+    <title>Coco Instrument - Управление финансами</title>
+    
+    <!-- PWA мета-теги -->
+    <meta name="description" content="Модульный инструмент для управления финансами">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Стили -->
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/auth.css">
+    <link rel="stylesheet" href="/css/coco-money.css">
+</head>
+<body>
+    <!-- Главный контейнер приложения -->
+    <div id="app" class="app-container">
+        <!-- Навигация -->
+        <nav id="main-nav" class="nav hidden">
+            <div class="nav-brand">Coco Instrument</div>
+            <div class="nav-links">
+                <a href="#/coco-money" class="nav-link">Coco Money</a>
+            </div>
+            <div class="nav-user">
+                <span id="user-email"></span>
+                <button id="logout-btn" class="btn-logout">Выйти</button>
+            </div>
+        </nav>
+
+        <!-- Контейнер для модулей -->
+        <main id="module-container" class="module-container">
+            <!-- Модуль аутентификации -->
+            <div id="auth-module" class="module">
+                <div class="auth-container">
+                    <h1 class="auth-title">Coco Instrument</h1>
+                    
+                    <!-- Форма входа -->
+                    <form id="login-form" class="auth-form">
+                        <h2>Вход в систему</h2>
+                        <input type="email" id="login-email" placeholder="Email" required>
+                        <input type="password" id="login-password" placeholder="Пароль" required>
+                        <label class="remember-device">
+                            <input type="checkbox" id="remember-device">
+                            <span>Запомнить устройство</span>
+                        </label>
+                        <button type="submit" class="btn-primary">Войти</button>
+                        <p class="auth-switch">
+                            Нет аккаунта? <a href="#" id="show-register">Зарегистрироваться</a>
+                        </p>
+                    </form>
+
+                    <!-- Форма регистрации -->
+                    <form id="register-form" class="auth-form hidden">
+                        <h2>Регистрация</h2>
+                        <input type="email" id="register-email" placeholder="Email" required>
+                        <input type="password" id="register-password" placeholder="Пароль" required>
+                        <input type="date" id="register-date" placeholder="Вчерашняя дата" required>
+                        <small class="date-hint">Введите вчерашнюю дату для подтверждения</small>
+                        <button type="submit" class="btn-primary">Зарегистрироваться</button>
+                        <p class="auth-switch">
+                            Есть аккаунт? <a href="#" id="show-login">Войти</a>
+                        </p>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Модуль Coco Money -->
+            <div id="coco-money-module" class="module hidden">
+                <div class="coco-money-container">
+                    <!-- Шапка с балансом -->
+                    <div class="balance-header">
+                        <h2>Coco Money</h2>
+                        <div class="balance-info">
+                            <span class="balance-label">Баланс:</span>
+                            <span id="total-balance" class="balance-amount">0 ₽</span>
+                        </div>
+                    </div>
+
+                    <!-- Вкладки листов доходов -->
+                    <div class="income-tabs">
+                        <div id="tabs-container" class="tabs-container">
+                            <!-- Динамически создаваемые вкладки -->
+                        </div>
+                        <button id="add-sheet-btn" class="tab-add">+</button>
+                    </div>
+
+                    <!-- Контент активного листа -->
+                    <div id="sheet-content" class="sheet-content">
+                        <!-- Информация о листе -->
+                        <div id="sheet-info" class="sheet-info">
+                            <div class="sheet-header">
+                                <h3 id="sheet-name">Выберите лист</h3>
+                                <button id="edit-sheet-btn" class="btn-edit hidden">Редактировать</button>
+                            </div>
+                            <div class="sheet-details">
+                                <div class="detail-item">
+                                    <span>Доход:</span>
+                                    <span id="sheet-income">0 ₽</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span>Расходы:</span>
+                                    <span id="sheet-expenses">0 ₽</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span>Остаток:</span>
+                                    <span id="sheet-balance">0 ₽</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Форма редактирования листа -->
+                        <div id="sheet-edit-form" class="sheet-edit-form hidden">
+                            <input type="text" id="edit-sheet-name" placeholder="Название листа">
+                            <input type="number" id="edit-sheet-income" placeholder="Сумма дохода">
+                            <input type="date" id="edit-sheet-date">
+                            <div class="form-actions">
+                                <button id="save-sheet-btn" class="btn-primary">Сохранить</button>
+                                <button id="cancel-edit-btn" class="btn-secondary">Отменить</button>
+                                <button id="delete-sheet-btn" class="btn-danger">Удалить лист</button>
+                            </div>
+                        </div>
+
+                        <!-- Секция расходов -->
+                        <div id="expenses-section" class="expenses-section hidden">
+                            <h4>Расходы</h4>
+                            
+                            <!-- Форма добавления расхода -->
+                            <form id="add-expense-form" class="expense-form">
+                                <input type="number" id="expense-amount" placeholder="Сумма" required>
+                                <input type="text" id="expense-note" placeholder="Примечание">
+                                <button type="submit" class="btn-primary">Добавить</button>
+                            </form>
+
+                            <!-- Список расходов -->
+                            <div id="expenses-list" class="expenses-list">
+                                <!-- Динамически создаваемые расходы -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Форма создания нового листа -->
+                    <div id="new-sheet-modal" class="modal hidden">
+                        <div class="modal-content">
+                            <h3>Новый лист доходов</h3>
+                            <form id="new-sheet-form">
+                                <input type="text" id="new-sheet-name" placeholder="Название" required>
+                                <input type="number" id="new-sheet-income" placeholder="Сумма дохода" required>
+                                <input type="date" id="new-sheet-date" required>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn-primary">Создать</button>
+                                    <button type="button" id="cancel-new-sheet" class="btn-secondary">Отмена</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Индикатор загрузки -->
+        <div id="loader" class="loader hidden">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Уведомления -->
+        <div id="toast-container" class="toast-container"></div>
+    </div>
+
+    <!-- Скрипты -->
+    <script src="/js/core/EventBus.js"></script>
+    <script src="/js/core/StateManager.js"></script>
+    <script src="/js/core/APIClient.js"></script>
+    <script src="/js/core/Router.js"></script>
+    <script src="/js/core/ModuleManager.js"></script>
+    <script src="/js/modules/AuthModule.js"></script>
+    <script src="/js/modules/CocoMoneyModule.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>

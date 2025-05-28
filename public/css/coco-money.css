@@ -1,0 +1,305 @@
+/* Стили модуля Coco Money */
+.coco-money-container {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+/* Шапка с балансом */
+.balance-header {
+  background: linear-gradient(135deg, var(--primary) 0%, #0056b3 100%);
+  color: var(--white);
+  padding: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.balance-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.balance-info {
+  text-align: right;
+}
+
+.balance-label {
+  display: block;
+  font-size: 0.875rem;
+  opacity: 0.9;
+}
+
+.balance-amount {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+/* Вкладки листов доходов */
+.income-tabs {
+  background: var(--light);
+  padding: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--gray-light);
+}
+
+.tabs-container {
+  display: flex;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.income-tab {
+  background: var(--white);
+  border: 1px solid var(--gray-light);
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  font-size: 0.875rem;
+}
+
+.income-tab:hover {
+  background: var(--primary);
+  color: var(--white);
+  border-color: var(--primary);
+}
+
+.income-tab.active {
+  background: var(--primary);
+  color: var(--white);
+  border-color: var(--primary);
+  font-weight: 500;
+}
+
+.tab-close {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 0.5rem;
+  opacity: 0.7;
+  transition: var(--transition);
+}
+
+.tab-close:hover {
+  opacity: 1;
+}
+
+.tab-add {
+  background: transparent;
+  border: 2px dashed var(--gray-light);
+  border-radius: var(--radius);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  color: var(--gray);
+  transition: var(--transition);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.tab-add:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(0,123,255,0.05);
+}
+
+/* Контент листа */
+.sheet-content {
+  padding: 2rem;
+}
+
+.sheet-info {
+  margin-bottom: 2rem;
+}
+
+.sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sheet-header h3 {
+  font-size: 1.25rem;
+  color: var(--dark);
+}
+
+.sheet-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.detail-item {
+  background: var(--light);
+  padding: 1rem;
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+.detail-item span:first-child {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--gray);
+  margin-bottom: 0.25rem;
+}
+
+.detail-item span:last-child {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+/* Форма редактирования листа */
+.sheet-edit-form {
+  background: var(--light);
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Секция расходов */
+.expenses-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--gray-light);
+}
+
+.expenses-section h4 {
+  margin-bottom: 1rem;
+  color: var(--dark);
+  font-size: 1.1rem;
+}
+
+.expense-form {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.expenses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.expense-item {
+  background: var(--light);
+  padding: 1rem;
+  border-radius: var(--radius);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: var(--transition);
+}
+
+.expense-item:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow);
+}
+
+.expense-info {
+  flex: 1;
+}
+
+.expense-amount {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.expense-note {
+  font-size: 0.875rem;
+  color: var(--gray);
+  margin-top: 0.25rem;
+}
+
+.expense-date {
+  font-size: 0.75rem;
+  color: var(--gray);
+  margin-top: 0.25rem;
+}
+
+.expense-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  color: var(--gray);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  transition: var(--transition);
+}
+
+.btn-icon:hover {
+  background: var(--white);
+  color: var(--primary);
+}
+
+.btn-icon.delete:hover {
+  color: var(--danger);
+}
+
+/* Пустое состояние */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--gray);
+}
+
+.empty-state p {
+  margin-bottom: 1rem;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .balance-header {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
+  }
+  
+  .balance-info {
+    text-align: center;
+    margin-top: 1rem;
+  }
+  
+  .sheet-content {
+    padding: 1rem;
+  }
+  
+  .expense-form {
+    grid-template-columns: 1fr;
+  }
+  
+  .expense-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .expense-actions {
+    margin-top: 0.5rem;
+    align-self: flex-end;
+  }
+  
+  .income-tabs {
+    overflow-x: scroll;
+    -webkit-overflow-scrolling: touch;
+  }
+}
