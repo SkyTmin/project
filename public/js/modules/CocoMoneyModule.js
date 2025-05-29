@@ -2,7 +2,7 @@
 const CocoMoneyModule = {
     id: 'coco-money',
     name: 'Coco Money',
-    version: '1.1.0',
+    version: '1.4.0',
     
     // Инициализация модуля
     init() {
@@ -13,6 +13,7 @@ const CocoMoneyModule = {
         this.editingExpenseId = null;
         this.originalSheetData = null;
         this.swipeStartX = null;
+        this.activeExpenseTab = 'regular';
         
         this.setupEventListeners();
         this.setupFormHandlers();
@@ -149,6 +150,15 @@ const CocoMoneyModule = {
             }, 'danger');
         });
         
+        // Вкладки расходов
+        document.getElementById('tab-regular').addEventListener('click', () => {
+            this.showExpenseTab('regular');
+        });
+        
+        document.getElementById('tab-preliminary').addEventListener('click', () => {
+            this.showExpenseTab('preliminary');
+        });
+        
         // Закрытие модального окна нового листа
         document.getElementById('cancel-new-sheet').addEventListener('click', () => {
             this.hideNewSheetModal();
@@ -188,12 +198,20 @@ const CocoMoneyModule = {
             await this.createSheet(e.target);
         });
         
-        // Форма добавления расхода
+        // Форма добавления обычного расхода
         const addExpenseForm = document.getElementById('add-expense-form');
         addExpenseForm.removeEventListener('submit', this.handleAddExpenseSubmit);
         addExpenseForm.addEventListener('submit', this.handleAddExpenseSubmit = async (e) => {
             e.preventDefault();
-            await this.addExpense(e.target);
+            await this.addExpense(e.target, false);
+        });
+        
+        // Форма добавления предварительного расхода
+        const addPreliminaryForm = document.getElementById('add-preliminary-form');
+        addPreliminaryForm.removeEventListener('submit', this.handleAddPreliminarySubmit);
+        addPreliminaryForm.addEventListener('submit', this.handleAddPreliminarySubmit = async (e) => {
+            e.preventDefault();
+            await this.addExpense(e.target, true);
         });
         
         // Форма редактирования расхода
@@ -203,6 +221,24 @@ const CocoMoneyModule = {
             e.preventDefault();
             await this.updateExpense(e.target);
         });
+    },
+    
+    // Показать вкладку расходов
+    showExpenseTab(tab) {
+        this.activeExpenseTab = tab;
+        
+        // Обновляем активную вкладку
+        document.querySelectorAll('.expense-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(`tab-${tab}`).classList.add('active');
+        
+        // Показываем соответствующий контент
+        if (tab === 'regular') {
+            document.getElementById('regular-expenses').classList.remove('hidden');
+            document.getElementById('preliminary-expenses').classList.add('hidden');
+        } else {
+            document.getElementById('regular-expenses').classList.add('hidden');
+            document.getElementById('preliminary-expenses').classList.remove('hidden');
+        }
     },
     
     // Настройка жестов свайпа
@@ -291,12 +327,12 @@ const CocoMoneyModule = {
         container.innerHTML = '';
         
         sheets.forEach(sheet => {
-            const sheetExpenses = expenses.filter(e => e.income_sheet_id === sheet.id);
+            const sheetExpenses = expenses.filter(e => e.income_sheet_id === sheet.id && !e.is_preliminary);
             const totalExpenses = sheetExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
             const balance = parseFloat(sheet.income_amount) - totalExpenses;
             
             const card = document.createElement('div');
-            card.className = 'sheet-card';
+            card.className = `sheet-card ${sheet.exclude_from_balance ? 'excluded' : ''}`;
             card.innerHTML = `
                 <div class="sheet-card-header">
                     <h3 class="sheet-card-title">${sheet.name}</h3>
@@ -346,6 +382,9 @@ const CocoMoneyModule = {
         
         // Скрываем форму редактирования
         this.hideEditForm();
+        
+        // Показываем вкладку обычных расходов по умолчанию
+        this.showExpenseTab('regular');
     },
     
     // Закрыть полноэкранный вид
@@ -362,7 +401,7 @@ const CocoMoneyModule = {
         const sheet = window.stateManager.getState('incomeSheets').find(s => s.id === this.currentSheetId);
         if (!sheet) return;
         
-        const expenses = window.stateManager.getState('expenses').filter(e => e.income_sheet_id === this.currentSheetId);
+        const expenses = window.stateManager.getState('expenses').filter(e => e.income_sheet_id === this.currentSheetId && !e.is_preliminary);
         const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
         const balance = parseFloat(sheet.income_amount) - totalExpenses;
         
@@ -375,57 +414,106 @@ const CocoMoneyModule = {
     renderExpenses() {
         if (!this.currentSheetId) return;
         
-        const container = document.getElementById('expenses-list');
+        const regularContainer = document.getElementById('expenses-list');
+        const preliminaryContainer = document.getElementById('preliminary-list');
         const expenses = window.stateManager.getState('expenses').filter(e => e.income_sheet_id === this.currentSheetId);
         
-        container.innerHTML = '';
+        const regularExpenses = expenses.filter(e => !e.is_preliminary);
+        const preliminaryExpenses = expenses.filter(e => e.is_preliminary);
         
-        if (expenses.length === 0) {
-            container.innerHTML = '<div class="empty-state"><p>Нет расходов</p></div>';
-            return;
+        // Рендерим обычные расходы
+        regularContainer.innerHTML = '';
+        if (regularExpenses.length === 0) {
+            regularContainer.innerHTML = '<div class="empty-state"><p>Нет расходов</p></div>';
+        } else {
+            regularExpenses.forEach(expense => {
+                regularContainer.appendChild(this.createExpenseItem(expense));
+            });
         }
         
-        expenses.forEach(expense => {
-            const item = document.createElement('div');
-            item.className = 'expense-item';
-            item.innerHTML = `
-                <div class="expense-info">
-                    <div class="expense-amount">${this.formatMoney(expense.amount)} руб.</div>
-                    ${expense.note ? `<div class="expense-note">${expense.note}</div>` : ''}
-                    <div class="expense-date">${this.formatDate(expense.created_at)}</div>
-                </div>
-                <div class="expense-actions">
-                    <button class="btn-icon edit" data-expense-id="${expense.id}" title="Редактировать">
-                        ✏️
-                    </button>
-                    <button class="btn-icon delete" data-expense-id="${expense.id}" title="Удалить">
-                        🗑️
-                    </button>
-                </div>
-            `;
-            
-            // Обработчик редактирования
-            item.querySelector('.edit').addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.showExpenseEditModal(expense);
+        // Рендерим предварительные расходы
+        preliminaryContainer.innerHTML = '';
+        if (preliminaryExpenses.length === 0) {
+            preliminaryContainer.innerHTML = '<div class="empty-state"><p>Нет предварительных расходов</p></div>';
+        } else {
+            preliminaryExpenses.forEach(expense => {
+                preliminaryContainer.appendChild(this.createExpenseItem(expense));
             });
-            
-            // Обработчик удаления
-            item.querySelector('.delete').addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.showConfirm('Удалить расход?', 'Вы уверены, что хотите удалить этот расход?', () => {
-                    this.deleteExpense(expense.id);
-                }, 'danger');
-            });
-            
-            container.appendChild(item);
+        }
+    },
+    
+    // Создание элемента расхода
+    createExpenseItem(expense) {
+        const item = document.createElement('div');
+        item.className = `expense-item ${expense.is_preliminary ? 'preliminary' : ''}`;
+        item.innerHTML = `
+            <div class="expense-info">
+                <div class="expense-amount">${this.formatMoney(expense.amount)} руб.</div>
+                ${expense.note ? `<div class="expense-note">${expense.note}</div>` : ''}
+                <div class="expense-date">${this.formatDate(expense.created_at)}</div>
+            </div>
+            <div class="expense-actions">
+                <button class="btn-icon edit" data-expense-id="${expense.id}" title="Редактировать">
+                    ✏️
+                </button>
+                <button class="btn-icon delete" data-expense-id="${expense.id}" title="Удалить">
+                    🗑️
+                </button>
+            </div>
+        `;
+        
+        // Обработчик редактирования
+        item.querySelector('.edit').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.showExpenseEditModal(expense);
         });
+        
+        // Обработчик удаления
+        item.querySelector('.delete').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.showConfirm('Удалить расход?', 'Вы уверены, что хотите удалить этот расход?', () => {
+                this.deleteExpense(expense.id);
+            }, 'danger');
+        });
+        
+        return item;
     },
     
     // Обновление общего баланса
     updateBalance() {
         const totalBalance = window.stateManager.calculateTotalBalance();
         document.getElementById('total-balance').textContent = `${this.formatMoney(totalBalance)} руб.`;
+    },
+    
+    // Обновление статистики
+    updateStatistics() {
+        const sheets = window.stateManager.getState('incomeSheets');
+        const expenses = window.stateManager.getState('expenses');
+        
+        // Фильтруем листы, исключенные из баланса
+        const includedSheets = sheets.filter(s => !s.exclude_from_balance);
+        const includedSheetIds = includedSheets.map(s => s.id);
+        
+        // Общее количество листов (включенных)
+        document.getElementById('stat-total-sheets').textContent = includedSheets.length;
+        
+        // Общий доход (только включенные листы)
+        const totalIncome = includedSheets.reduce((sum, sheet) => sum + parseFloat(sheet.income_amount), 0);
+        document.getElementById('stat-total-income').textContent = `${this.formatMoney(totalIncome)} руб.`;
+        
+        // Общие расходы (только обычные расходы включенных листов)
+        const includedExpenses = expenses.filter(e => includedSheetIds.includes(e.income_sheet_id) && !e.is_preliminary);
+        const totalExpenses = includedExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+        document.getElementById('stat-total-expenses').textContent = `${this.formatMoney(totalExpenses)} руб.`;
+        
+        // Средний расход
+        const avgExpense = includedExpenses.length > 0 ? totalExpenses / includedExpenses.length : 0;
+        document.getElementById('stat-avg-expense').textContent = `${this.formatMoney(avgExpense)} руб.`;
+        
+        // Предварительные расходы (все листы)
+        const preliminaryExpenses = expenses.filter(e => e.is_preliminary);
+        const totalPreliminary = preliminaryExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+        document.getElementById('stat-preliminary').textContent = `${this.formatMoney(totalPreliminary)} руб.`;
     },
     
     // Показать модальное окно нового листа
@@ -455,7 +543,8 @@ const CocoMoneyModule = {
             const sheet = await window.apiClient.incomeSheets.create({
                 name,
                 income_amount: parseFloat(income),
-                date
+                date,
+                exclude_from_balance: false
             });
             
             // Добавляем в состояние
@@ -483,7 +572,8 @@ const CocoMoneyModule = {
         this.originalSheetData = {
             name: sheet.name,
             income_amount: sheet.income_amount,
-            date: sheet.date
+            date: sheet.date,
+            exclude_from_balance: sheet.exclude_from_balance
         };
         
         document.getElementById('sheet-info').classList.add('hidden');
@@ -496,6 +586,7 @@ const CocoMoneyModule = {
         const date = new Date(sheet.date);
         const formattedDate = date.toISOString().split('T')[0];
         document.getElementById('edit-sheet-date').value = formattedDate;
+        document.getElementById('edit-sheet-exclude').checked = sheet.exclude_from_balance || false;
     },
     
     // Скрыть форму редактирования
@@ -512,12 +603,14 @@ const CocoMoneyModule = {
         const name = document.getElementById('edit-sheet-name').value;
         const income = document.getElementById('edit-sheet-income').value;
         const date = document.getElementById('edit-sheet-date').value;
+        const excludeFromBalance = document.getElementById('edit-sheet-exclude').checked;
         
         // Проверяем, были ли изменения
         if (this.originalSheetData &&
             this.originalSheetData.name === name &&
             parseFloat(this.originalSheetData.income_amount) === parseFloat(income) &&
-            this.originalSheetData.date === date) {
+            this.originalSheetData.date === date &&
+            this.originalSheetData.exclude_from_balance === excludeFromBalance) {
             // Ничего не изменилось, просто закрываем форму
             this.hideEditForm();
             return;
@@ -530,7 +623,8 @@ const CocoMoneyModule = {
                 const updated = await window.apiClient.incomeSheets.update(this.currentSheetId, {
                     name,
                     income_amount: parseFloat(income),
-                    date
+                    date,
+                    exclude_from_balance: excludeFromBalance
                 });
                 
                 // Обновляем в состоянии
@@ -578,11 +672,14 @@ const CocoMoneyModule = {
     },
     
     // Добавление расхода
-    async addExpense(form) {
+    async addExpense(form, isPreliminary) {
         if (!this.currentSheetId) return;
         
-        const amount = form.elements['expense-amount'].value;
-        const note = form.elements['expense-note'].value;
+        const amountField = isPreliminary ? 'preliminary-amount' : 'expense-amount';
+        const noteField = isPreliminary ? 'preliminary-note' : 'expense-note';
+        
+        const amount = form.elements[amountField].value;
+        const note = form.elements[noteField].value;
         
         this.showLoader(true);
         
@@ -590,7 +687,8 @@ const CocoMoneyModule = {
             const expense = await window.apiClient.expenses.create({
                 income_sheet_id: this.currentSheetId,
                 amount: parseFloat(amount),
-                note
+                note,
+                is_preliminary: isPreliminary
             });
             
             // Добавляем в состояние
@@ -599,7 +697,7 @@ const CocoMoneyModule = {
             window.stateManager.setState('expenses', expenses);
             
             form.reset();
-            this.showToast('Расход добавлен', 'success');
+            this.showToast(`${isPreliminary ? 'Предварительный расход' : 'Расход'} добавлен`, 'success');
         } catch (error) {
             this.showToast('Ошибка добавления расхода', 'error');
         } finally {
@@ -614,6 +712,7 @@ const CocoMoneyModule = {
         document.getElementById('edit-expense-id').value = expense.id;
         document.getElementById('edit-expense-amount').value = expense.amount;
         document.getElementById('edit-expense-note').value = expense.note || '';
+        document.getElementById('edit-expense-preliminary').checked = expense.is_preliminary || false;
         
         document.getElementById('expense-edit-modal').classList.remove('hidden');
         document.getElementById('edit-expense-amount').focus();
@@ -631,13 +730,15 @@ const CocoMoneyModule = {
         const expenseId = form.elements['edit-expense-id'].value;
         const amount = form.elements['edit-expense-amount'].value;
         const note = form.elements['edit-expense-note'].value;
+        const isPreliminary = form.elements['edit-expense-preliminary'].checked;
         
         this.showLoader(true);
         
         try {
             const updated = await window.apiClient.expenses.update(expenseId, {
                 amount: parseFloat(amount),
-                note
+                note,
+                is_preliminary: isPreliminary
             });
             
             // Обновляем в состоянии
@@ -708,21 +809,41 @@ const CocoMoneyModule = {
         if (!sheet) return;
         
         const expenses = window.stateManager.getState('expenses').filter(e => e.income_sheet_id === this.currentSheetId);
-        const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
-        const balance = parseFloat(sheet.income_amount) - totalExpenses;
+        const regularExpenses = expenses.filter(e => !e.is_preliminary);
+        const preliminaryExpenses = expenses.filter(e => e.is_preliminary);
+        
+        const totalRegular = regularExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+        const totalPreliminary = preliminaryExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+        const balance = parseFloat(sheet.income_amount) - totalRegular;
         
         // Формируем текст для экспорта
         let exportText = `ЛИСТ ДОХОДОВ: ${sheet.name}\n`;
         exportText += `Дата: ${this.formatDate(sheet.date)}\n`;
+        if (sheet.exclude_from_balance) {
+            exportText += `Статус: Исключен из общего баланса\n`;
+        }
         exportText += `=====================================\n\n`;
         exportText += `Доход: ${this.formatMoney(sheet.income_amount)} руб.\n`;
-        exportText += `Расходы: ${this.formatMoney(totalExpenses)} руб.\n`;
+        exportText += `Расходы: ${this.formatMoney(totalRegular)} руб.\n`;
         exportText += `Остаток: ${this.formatMoney(balance)} руб.\n\n`;
         
-        if (expenses.length > 0) {
+        if (regularExpenses.length > 0) {
             exportText += `СПИСОК РАСХОДОВ:\n`;
             exportText += `=====================================\n`;
-            expenses.forEach((expense, index) => {
+            regularExpenses.forEach((expense, index) => {
+                exportText += `${index + 1}. ${this.formatMoney(expense.amount)} руб.`;
+                if (expense.note) {
+                    exportText += ` - ${expense.note}`;
+                }
+                exportText += ` (${this.formatDate(expense.created_at)})\n`;
+            });
+        }
+        
+        if (preliminaryExpenses.length > 0) {
+            exportText += `\nПРЕДВАРИТЕЛЬНЫЕ РАСХОДЫ:\n`;
+            exportText += `=====================================\n`;
+            exportText += `Итого: ${this.formatMoney(totalPreliminary)} руб.\n\n`;
+            preliminaryExpenses.forEach((expense, index) => {
                 exportText += `${index + 1}. ${this.formatMoney(expense.amount)} руб.`;
                 if (expense.note) {
                     exportText += ` - ${expense.note}`;
@@ -766,27 +887,6 @@ const CocoMoneyModule = {
         URL.revokeObjectURL(url);
         
         this.showToast('Файл скачан', 'success');
-    },
-    
-    // Обновление статистики
-    updateStatistics() {
-        const sheets = window.stateManager.getState('incomeSheets');
-        const expenses = window.stateManager.getState('expenses');
-        
-        // Общее количество листов
-        document.getElementById('stat-total-sheets').textContent = sheets.length;
-        
-        // Общий доход
-        const totalIncome = sheets.reduce((sum, sheet) => sum + parseFloat(sheet.income_amount), 0);
-        document.getElementById('stat-total-income').textContent = `${this.formatMoney(totalIncome)} руб.`;
-        
-        // Общие расходы
-        const totalExpenses = expenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
-        document.getElementById('stat-total-expenses').textContent = `${this.formatMoney(totalExpenses)} руб.`;
-        
-        // Средний расход
-        const avgExpense = expenses.length > 0 ? totalExpenses / expenses.length : 0;
-        document.getElementById('stat-avg-expense').textContent = `${this.formatMoney(avgExpense)} руб.`;
     },
     
     // Утилиты
