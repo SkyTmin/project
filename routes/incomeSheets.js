@@ -12,7 +12,7 @@ router.use(authenticateToken);
 // Получить все листы доходов пользователя
 router.get('/', asyncHandler(async (req, res) => {
     const result = await query(
-        `SELECT id, name, income_amount, date, created_at, updated_at 
+        `SELECT id, name, income_amount, date, exclude_from_balance, created_at, updated_at 
          FROM income_sheets 
          WHERE user_id = $1 
          ORDER BY date DESC, created_at DESC`,
@@ -24,7 +24,7 @@ router.get('/', asyncHandler(async (req, res) => {
 
 // Создать новый лист доходов
 router.post('/', asyncHandler(async (req, res) => {
-    const { name, income_amount, date } = req.body;
+    const { name, income_amount, date, exclude_from_balance = false } = req.body;
     
     // Валидация
     if (!name || income_amount === undefined || !date) {
@@ -41,10 +41,10 @@ router.post('/', asyncHandler(async (req, res) => {
     
     // Создаём лист
     const result = await query(
-        `INSERT INTO income_sheets (user_id, name, income_amount, date) 
-         VALUES ($1, $2, $3, $4) 
-         RETURNING id, name, income_amount, date, created_at, updated_at`,
-        [req.user.id, name.trim(), income_amount, date]
+        `INSERT INTO income_sheets (user_id, name, income_amount, date, exclude_from_balance) 
+         VALUES ($1, $2, $3, $4, $5) 
+         RETURNING id, name, income_amount, date, exclude_from_balance, created_at, updated_at`,
+        [req.user.id, name.trim(), income_amount, date, exclude_from_balance]
     );
     
     res.status(201).json(result.rows[0]);
@@ -53,7 +53,7 @@ router.post('/', asyncHandler(async (req, res) => {
 // Обновить лист доходов
 router.put('/:id', asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { name, income_amount, date } = req.body;
+    const { name, income_amount, date, exclude_from_balance } = req.body;
     
     // Проверяем, что лист принадлежит пользователю
     const checkResult = await query(
@@ -81,10 +81,10 @@ router.put('/:id', asyncHandler(async (req, res) => {
     // Обновляем лист
     const result = await query(
         `UPDATE income_sheets 
-         SET name = $1, income_amount = $2, date = $3, updated_at = CURRENT_TIMESTAMP 
-         WHERE id = $4 AND user_id = $5 
-         RETURNING id, name, income_amount, date, created_at, updated_at`,
-        [name.trim(), income_amount, date, id, req.user.id]
+         SET name = $1, income_amount = $2, date = $3, exclude_from_balance = $4, updated_at = CURRENT_TIMESTAMP 
+         WHERE id = $5 AND user_id = $6 
+         RETURNING id, name, income_amount, date, exclude_from_balance, created_at, updated_at`,
+        [name.trim(), income_amount, date, exclude_from_balance || false, id, req.user.id]
     );
     
     res.json(result.rows[0]);
