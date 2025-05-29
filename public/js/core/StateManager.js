@@ -148,7 +148,7 @@ class StateManager {
         if (!sheet) return 0;
         
         const expenses = this.state.expenses
-            .filter(e => e.income_sheet_id === sheetId)
+            .filter(e => e.income_sheet_id === sheetId && !e.is_preliminary)
             .reduce((sum, e) => sum + parseFloat(e.amount), 0);
         
         return parseFloat(sheet.income_amount) - expenses;
@@ -156,9 +156,11 @@ class StateManager {
 
     // Вычислить общий баланс
     calculateTotalBalance() {
-        return this.state.incomeSheets.reduce((total, sheet) => {
-            return total + this.calculateSheetBalance(sheet.id);
-        }, 0);
+        return this.state.incomeSheets
+            .filter(sheet => !sheet.exclude_from_balance) // Исключаем листы с флагом
+            .reduce((total, sheet) => {
+                return total + this.calculateSheetBalance(sheet.id);
+            }, 0);
     }
 }
 
