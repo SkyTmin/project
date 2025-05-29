@@ -1,5 +1,5 @@
 // sw.js - Service Worker для Progressive Web App
-const CACHE_NAME = 'coco-instrument-v1.2';
+const CACHE_NAME = 'coco-instrument-v1.3';
 const urlsToCache = [
     '/',
     '/css/main.css',
