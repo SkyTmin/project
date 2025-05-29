@@ -25,10 +25,10 @@ router.get('/:sheetId', asyncHandler(async (req, res) => {
     
     // Получаем расходы
     const result = await query(
-        `SELECT id, income_sheet_id, amount, note, created_at, updated_at 
+        `SELECT id, income_sheet_id, amount, note, is_preliminary, created_at, updated_at 
          FROM expenses 
          WHERE income_sheet_id = $1 
-         ORDER BY created_at DESC`,
+         ORDER BY is_preliminary, created_at DESC`,
         [sheetId]
     );
     
@@ -37,7 +37,7 @@ router.get('/:sheetId', asyncHandler(async (req, res) => {
 
 // Создать новый расход
 router.post('/', asyncHandler(async (req, res) => {
-    const { income_sheet_id, amount, note } = req.body;
+    const { income_sheet_id, amount, note, is_preliminary = false } = req.body;
     
     // Валидация
     if (!income_sheet_id || amount === undefined) {
@@ -60,10 +60,10 @@ router.post('/', asyncHandler(async (req, res) => {
     
     // Создаём расход
     const result = await query(
-        `INSERT INTO expenses (income_sheet_id, amount, note) 
-         VALUES ($1, $2, $3) 
-         RETURNING id, income_sheet_id, amount, note, created_at, updated_at`,
-        [income_sheet_id, amount, note ? note.trim() : null]
+        `INSERT INTO expenses (income_sheet_id, amount, note, is_preliminary) 
+         VALUES ($1, $2, $3, $4) 
+         RETURNING id, income_sheet_id, amount, note, is_preliminary, created_at, updated_at`,
+        [income_sheet_id, amount, note ? note.trim() : null, is_preliminary]
     );
     
     res.status(201).json(result.rows[0]);
@@ -72,7 +72,7 @@ router.post('/', asyncHandler(async (req, res) => {
 // Обновить расход
 router.put('/:id', asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { amount, note } = req.body;
+    const { amount, note, is_preliminary } = req.body;
     
     // Валидация
     if (amount === undefined) {
@@ -99,10 +99,10 @@ router.put('/:id', asyncHandler(async (req, res) => {
     // Обновляем расход
     const result = await query(
         `UPDATE expenses 
-         SET amount = $1, note = $2, updated_at = CURRENT_TIMESTAMP 
-         WHERE id = $3 
-         RETURNING id, income_sheet_id, amount, note, created_at, updated_at`,
-        [amount, note ? note.trim() : null, id]
+         SET amount = $1, note = $2, is_preliminary = $3, updated_at = CURRENT_TIMESTAMP 
+         WHERE id = $4 
+         RETURNING id, income_sheet_id, amount, note, is_preliminary, created_at, updated_at`,
+        [amount, note ? note.trim() : null, is_preliminary || false, id]
     );
     
     res.json(result.rows[0]);
