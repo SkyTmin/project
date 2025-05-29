@@ -27,6 +27,9 @@ const HomeModule = {
         document.getElementById('auth-module').classList.add('hidden');
         document.getElementById('coco-money-module').classList.add('hidden');
         document.getElementById('home-module').classList.remove('hidden');
+        
+        // Скрываем полноэкранный вид листа если он открыт
+        document.getElementById('sheet-fullscreen').classList.add('hidden');
     }
 };
 
