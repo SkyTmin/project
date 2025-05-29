@@ -128,6 +128,11 @@ body {
   letter-spacing: 0.5px;
   position: relative;
   overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2;
 }
 
 .btn-primary {
@@ -265,6 +270,48 @@ input:focus {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+}
+
+/* Поиск на главной странице */
+.search-container {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: 2rem auto 3rem;
+  z-index: 1;
+}
+
+.search-input {
+  width: 100%;
+  padding: 1rem 3rem 1rem 1.5rem;
+  border: 2px solid var(--beige);
+  border-radius: 50px;
+  font-size: 1rem;
+  background: var(--white);
+  transition: var(--transition);
+}
+
+.search-input:focus {
+  border-color: var(--brown);
+  box-shadow: 0 0 0 4px rgba(123, 75, 42, 0.1);
+  transform: translateY(-2px);
+}
+
+.search-icon {
+  position: absolute;
+  right: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.25rem;
+  color: var(--brown-light);
+  pointer-events: none;
+}
+
+.no-results {
+  text-align: center;
+  padding: 3rem;
+  color: var(--brown-light);
+  font-size: 1.1rem;
 }
 
 /* Главная страница - современный дизайн */
