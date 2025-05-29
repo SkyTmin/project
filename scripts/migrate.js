@@ -27,6 +27,7 @@ async function migrate() {
                 name VARCHAR(255) NOT NULL,
                 income_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
                 date DATE NOT NULL,
+                exclude_from_balance BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
@@ -40,6 +41,7 @@ async function migrate() {
                 income_sheet_id INTEGER REFERENCES income_sheets(id) ON DELETE CASCADE,
                 amount DECIMAL(10,2) NOT NULL,
                 note TEXT,
+                is_preliminary BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
@@ -116,6 +118,31 @@ async function migrate() {
             END $$
         `);
         console.log('✓ Trigger for expenses.updated_at created');
+        
+        // Добавляем новые колонки если их еще нет (для обновления существующих БД)
+        await query(`
+            DO $ 
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                              WHERE table_name = 'income_sheets' 
+                              AND column_name = 'exclude_from_balance') THEN
+                    ALTER TABLE income_sheets ADD COLUMN exclude_from_balance BOOLEAN DEFAULT FALSE;
+                END IF;
+            END $
+        `);
+        console.log('✓ Added exclude_from_balance column to income_sheets if not exists');
+        
+        await query(`
+            DO $ 
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                              WHERE table_name = 'expenses' 
+                              AND column_name = 'is_preliminary') THEN
+                    ALTER TABLE expenses ADD COLUMN is_preliminary BOOLEAN DEFAULT FALSE;
+                END IF;
+            END $
+        `);
+        console.log('✓ Added is_preliminary column to expenses if not exists');
         
         console.log('\n✅ Database migration completed successfully!');
         
