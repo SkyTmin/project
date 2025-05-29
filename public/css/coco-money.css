@@ -384,6 +384,96 @@
   align-items: center;
 }
 
+/* Чекбокс для исключения из баланса */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9375rem;
+  color: var(--brown-light);
+  cursor: pointer;
+  margin: 0.5rem 0;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  cursor: pointer;
+  accent-color: var(--brown);
+}
+
+/* Индикатор исключенного листа */
+.sheet-card.excluded {
+  opacity: 0.7;
+  background: var(--beige-light);
+}
+
+.sheet-card.excluded::after {
+  content: 'Исключен';
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: var(--brown-light);
+  color: var(--white);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Вкладки расходов */
+.expenses-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--beige);
+}
+
+.expense-tab {
+  background: none;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  color: var(--brown-light);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+}
+
+.expense-tab:hover {
+  color: var(--brown);
+}
+
+.expense-tab.active {
+  color: var(--brown);
+}
+
+.expense-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--brown);
+}
+
+.expense-content {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Предварительные расходы стиль */
+.expense-item.preliminary {
+  background: var(--beige-light);
+  border: 2px dashed var(--brown-light);
+}
+
+.expense-item.preliminary .expense-amount {
+  color: var(--brown-light);
+  font-style: italic;
+}
+
 /* Статистика */
 .statistics-section {
   margin-top: 3rem;
