@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#007bff">
+    <meta name="theme-color" content="#7B4B2A">
     <title>Coco Instrument - Управление финансами</title>
     
     <!-- PWA мета-теги -->
@@ -74,7 +74,7 @@
             <div id="home-module" class="module hidden">
                 <div class="home-container">
                     <h1>Добро пожаловать в Coco Instrument</h1>
-                    <p class="home-description">Выберите инструмент для работы</p>
+                    <p class="home-description">Современные инструменты для управления вашими финансами</p>
                     
                     <div class="tools-grid">
                         <a href="#/coco-money" class="tool-card">
@@ -93,84 +93,88 @@
                     <div class="balance-header">
                         <h2>Coco Money</h2>
                         <div class="balance-info">
-                            <span class="balance-label">Баланс:</span>
+                            <span class="balance-label">Общий баланс</span>
                             <span id="total-balance" class="balance-amount">0 ₽</span>
                         </div>
                     </div>
 
-                    <!-- Вкладки листов доходов -->
-                    <div class="income-tabs">
-                        <div id="tabs-container" class="tabs-container">
-                            <!-- Динамически создаваемые вкладки -->
-                        </div>
-                        <button id="add-sheet-btn" class="tab-add hidden">+</button>
+                    <!-- Сетка карточек листов -->
+                    <div id="sheets-grid" class="sheets-grid">
+                        <!-- Динамически создаваемые карточки -->
                     </div>
 
-                    <!-- Контент активного листа -->
-                    <div id="sheet-content" class="sheet-content">
-                        <!-- Информация о листе -->
-                        <div id="sheet-info" class="sheet-info">
-                            <div class="sheet-header">
-                                <h3 id="sheet-name">Выберите лист</h3>
-                                <div class="sheet-actions">
-                                    <button id="export-sheet-btn" class="btn-icon" title="Экспорт">📄</button>
-                                    <button id="edit-sheet-btn" class="btn-edit hidden">Редактировать</button>
-                                </div>
-                            </div>
-                            <div class="sheet-details">
-                                <div class="detail-item">
-                                    <span>Доход:</span>
-                                    <span id="sheet-income">0 ₽</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span>Расходы:</span>
-                                    <span id="sheet-expenses">0 ₽</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span>Остаток:</span>
-                                    <span id="sheet-balance">0 ₽</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Форма редактирования листа -->
-                        <div id="sheet-edit-form" class="sheet-edit-form hidden">
-                            <input type="text" id="edit-sheet-name" placeholder="Название листа">
-                            <input type="number" id="edit-sheet-income" placeholder="Сумма дохода">
-                            <input type="date" id="edit-sheet-date">
-                            <div class="form-actions">
-                                <button id="save-sheet-btn" class="btn-primary">Сохранить</button>
-                                <button id="cancel-edit-btn" class="btn-secondary">Отменить</button>
-                                <button id="delete-sheet-btn" class="btn-danger">Удалить лист</button>
-                            </div>
-                        </div>
-
-                        <!-- Секция расходов -->
-                        <div id="expenses-section" class="expenses-section hidden">
-                            <h4>Расходы</h4>
-                            
-                            <!-- Форма добавления расхода -->
-                            <form id="add-expense-form" class="expense-form">
-                                <input type="number" id="expense-amount" placeholder="Сумма" required>
-                                <input type="text" id="expense-note" placeholder="Примечание">
-                                <button type="submit" class="btn-primary">Добавить</button>
-                            </form>
-
-                            <!-- Список расходов -->
-                            <div id="expenses-list" class="expenses-list">
-                                <!-- Динамически создаваемые расходы -->
-                            </div>
-                        </div>
-
-                        <!-- Пустое состояние -->
-                        <div id="empty-state" class="empty-state">
-                            <p>У вас пока нет листов доходов</p>
-                            <button id="create-first-sheet" class="btn-primary">Создать первый лист</button>
-                        </div>
+                    <!-- Пустое состояние -->
+                    <div id="empty-state" class="empty-state hidden">
+                        <p>У вас пока нет листов доходов</p>
+                        <button id="create-first-sheet" class="btn-primary">Создать первый лист</button>
                     </div>
 
                     <!-- Кнопка добавления листа (плавающая) -->
-                    <button id="fab-add-sheet" class="fab hidden" title="Добавить лист доходов">+</button>
+                    <button id="fab-add-sheet" class="fab" title="Добавить лист доходов">+</button>
+
+                    <!-- Полноэкранный вид листа -->
+                    <div id="sheet-fullscreen" class="sheet-fullscreen hidden">
+                        <div class="sheet-fullscreen-header">
+                            <button id="btn-back" class="btn-back">←</button>
+                            <h2 id="fullscreen-sheet-title" class="sheet-fullscreen-title"></h2>
+                            <div class="sheet-actions">
+                                <button id="export-sheet-btn" class="btn-icon" title="Скачать">⬇</button>
+                                <button id="edit-sheet-btn" class="btn-icon" title="Редактировать">✏️</button>
+                            </div>
+                        </div>
+                        
+                        <div class="sheet-fullscreen-content">
+                            <!-- Информация о листе -->
+                            <div id="sheet-info" class="sheet-info">
+                                <div class="sheet-details">
+                                    <div class="detail-item">
+                                        <span>Доход</span>
+                                        <span id="sheet-income">0 ₽</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span>Расходы</span>
+                                        <span id="sheet-expenses">0 ₽</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span>Остаток</span>
+                                        <span id="sheet-balance">0 ₽</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Форма редактирования листа -->
+                            <div id="sheet-edit-form" class="sheet-edit-form hidden">
+                                <input type="text" id="edit-sheet-name" placeholder="Название листа">
+                                <input type="number" id="edit-sheet-income" placeholder="Сумма дохода">
+                                <input type="date" id="edit-sheet-date">
+                                <div class="form-actions">
+                                    <button id="save-sheet-btn" class="btn-primary">Сохранить</button>
+                                    <button id="cancel-edit-btn" class="btn-secondary">Отменить</button>
+                                    <button id="delete-sheet-btn" class="btn-danger">Удалить лист</button>
+                                </div>
+                            </div>
+
+                            <!-- Секция расходов -->
+                            <div id="expenses-section" class="expenses-section">
+                                <h4>Расходы</h4>
+                                
+                                <!-- Форма добавления расхода -->
+                                <form id="add-expense-form" class="expense-form">
+                                    <input type="number" id="expense-amount" placeholder="Сумма" required>
+                                    <input type="text" id="expense-note" placeholder="Примечание">
+                                    <button type="submit" class="btn-primary">Добавить</button>
+                                </form>
+
+                                <!-- Список расходов -->
+                                <div id="expenses-list" class="expenses-list">
+                                    <!-- Динамически создаваемые расходы -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Индикатор свайпа -->
+                        <div class="swipe-hint"></div>
+                    </div>
 
                     <!-- Форма создания нового листа -->
                     <div id="new-sheet-modal" class="modal hidden">
@@ -210,6 +214,22 @@
                                 <button id="download-export" class="btn-primary">Скачать</button>
                                 <button id="close-export" class="btn-secondary">Закрыть</button>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Модальное окно редактирования расхода -->
+                    <div id="expense-edit-modal" class="modal hidden">
+                        <div class="modal-content">
+                            <h3>Редактировать расход</h3>
+                            <form id="expense-edit-form">
+                                <input type="hidden" id="edit-expense-id">
+                                <input type="number" id="edit-expense-amount" placeholder="Сумма" required>
+                                <input type="text" id="edit-expense-note" placeholder="Примечание">
+                                <div class="form-actions">
+                                    <button type="submit" class="btn-primary">Сохранить</button>
+                                    <button type="button" id="cancel-expense-edit" class="btn-secondary">Отмена</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
