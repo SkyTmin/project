@@ -145,6 +145,13 @@
                                     <div class="stat-value" id="stat-avg-expense">0 руб.</div>
                                 </div>
                             </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">⏳</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">Предварительные расходы</div>
+                                    <div class="stat-value" id="stat-preliminary">0 руб.</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -192,6 +199,10 @@
                                 <input type="text" id="edit-sheet-name" placeholder="Название листа">
                                 <input type="number" id="edit-sheet-income" placeholder="Сумма дохода">
                                 <input type="date" id="edit-sheet-date">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="edit-sheet-exclude">
+                                    <span>Исключить из общего баланса</span>
+                                </label>
                                 <div class="form-actions">
                                     <button id="save-sheet-btn" class="btn-primary">Сохранить</button>
                                     <button id="cancel-edit-btn" class="btn-secondary">Отменить</button>
@@ -201,18 +212,43 @@
 
                             <!-- Секция расходов -->
                             <div id="expenses-section" class="expenses-section">
-                                <h4>Расходы</h4>
+                                <div class="expenses-tabs">
+                                    <button id="tab-regular" class="expense-tab active">Расходы</button>
+                                    <button id="tab-preliminary" class="expense-tab">Предварительные расходы</button>
+                                </div>
                                 
-                                <!-- Форма добавления расхода -->
-                                <form id="add-expense-form" class="expense-form">
-                                    <input type="number" id="expense-amount" placeholder="Сумма" required>
-                                    <input type="text" id="expense-note" placeholder="Примечание">
-                                    <button type="submit" class="btn-primary">Добавить</button>
-                                </form>
+                                <!-- Обычные расходы -->
+                                <div id="regular-expenses" class="expense-content">
+                                    <h4>Расходы</h4>
+                                    
+                                    <!-- Форма добавления расхода -->
+                                    <form id="add-expense-form" class="expense-form">
+                                        <input type="number" id="expense-amount" placeholder="Сумма" required>
+                                        <input type="text" id="expense-note" placeholder="Примечание">
+                                        <button type="submit" class="btn-primary">Добавить</button>
+                                    </form>
 
-                                <!-- Список расходов -->
-                                <div id="expenses-list" class="expenses-list">
-                                    <!-- Динамически создаваемые расходы -->
+                                    <!-- Список расходов -->
+                                    <div id="expenses-list" class="expenses-list">
+                                        <!-- Динамически создаваемые расходы -->
+                                    </div>
+                                </div>
+                                
+                                <!-- Предварительные расходы -->
+                                <div id="preliminary-expenses" class="expense-content hidden">
+                                    <h4>Предварительные расходы</h4>
+                                    
+                                    <!-- Форма добавления предварительного расхода -->
+                                    <form id="add-preliminary-form" class="expense-form">
+                                        <input type="number" id="preliminary-amount" placeholder="Сумма" required>
+                                        <input type="text" id="preliminary-note" placeholder="Примечание">
+                                        <button type="submit" class="btn-primary">Добавить</button>
+                                    </form>
+
+                                    <!-- Список предварительных расходов -->
+                                    <div id="preliminary-list" class="expenses-list">
+                                        <!-- Динамически создаваемые расходы -->
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -270,6 +306,10 @@
                                 <input type="hidden" id="edit-expense-id">
                                 <input type="number" id="edit-expense-amount" placeholder="Сумма" required>
                                 <input type="text" id="edit-expense-note" placeholder="Примечание">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="edit-expense-preliminary">
+                                    <span>Предварительный расход</span>
+                                </label>
                                 <div class="form-actions">
                                     <button type="submit" class="btn-primary">Сохранить</button>
                                     <button type="button" id="cancel-expense-edit" class="btn-secondary">Отмена</button>
