@@ -2,16 +2,22 @@
 const CocoMoneyModule = {
     id: 'coco-money',
     name: 'Coco Money',
-    version: '1.0.0',
+    version: '1.1.0',
     
     // Инициализация модуля
     init() {
         // Проверяем, что модуль еще не инициализирован
         if (this.initialized) return;
         
+        this.currentSheetId = null;
+        this.editingExpenseId = null;
+        this.originalSheetData = null;
+        this.swipeStartX = null;
+        
         this.setupEventListeners();
         this.setupFormHandlers();
         this.subscribeToState();
+        this.setupSwipeGestures();
         this.initialized = true;
     },
     
@@ -41,15 +47,16 @@ const CocoMoneyModule = {
         document.getElementById('home-module').classList.add('hidden');
         document.getElementById('coco-money-module').classList.remove('hidden');
         
+        // Скрываем полноэкранный вид
+        document.getElementById('sheet-fullscreen').classList.add('hidden');
+        
         // Проверяем наличие листов
         const sheets = window.stateManager.getState('incomeSheets');
         if (sheets.length === 0) {
             this.showEmptyState();
         } else {
             this.hideEmptyState();
-            // Рендерим вкладки и контент
-            this.renderTabs();
-            this.renderActiveSheet();
+            this.renderSheets();
         }
         
         this.updateBalance();
@@ -58,24 +65,14 @@ const CocoMoneyModule = {
     // Показать пустое состояние
     showEmptyState() {
         document.getElementById('empty-state').classList.remove('hidden');
-        document.getElementById('sheet-info').classList.add('hidden');
-        document.getElementById('expenses-section').classList.add('hidden');
-        document.getElementById('add-sheet-btn').classList.add('hidden');
+        document.getElementById('sheets-grid').classList.add('hidden');
         document.getElementById('fab-add-sheet').classList.add('hidden');
-        
-        // Очищаем отображение
-        document.getElementById('sheet-name').textContent = '';
-        document.getElementById('sheet-income').textContent = '0 ₽';
-        document.getElementById('sheet-expenses').textContent = '0 ₽';
-        document.getElementById('sheet-balance').textContent = '0 ₽';
-        document.getElementById('expenses-list').innerHTML = '';
-        document.getElementById('tabs-container').innerHTML = '';
     },
     
     // Скрыть пустое состояние
     hideEmptyState() {
         document.getElementById('empty-state').classList.add('hidden');
-        document.getElementById('add-sheet-btn').classList.remove('hidden');
+        document.getElementById('sheets-grid').classList.remove('hidden');
         document.getElementById('fab-add-sheet').classList.remove('hidden');
     },
     
@@ -86,33 +83,27 @@ const CocoMoneyModule = {
             const sheets = window.stateManager.getState('incomeSheets');
             if (sheets.length === 0) {
                 this.showEmptyState();
+                this.closeFullscreenSheet();
             } else {
                 this.hideEmptyState();
-                this.renderTabs();
+                this.renderSheets();
             }
             this.updateBalance();
         });
         
-        // Подписываемся на изменение активного листа
-        window.stateManager.subscribe('activeSheetId', () => {
-            this.renderActiveSheet();
-        });
-        
         // Подписываемся на изменения расходов
         window.stateManager.subscribe('expenses', () => {
-            this.renderExpenses();
+            if (this.currentSheetId) {
+                this.updateSheetInfo();
+                this.renderExpenses();
+            }
             this.updateBalance();
-            this.updateSheetInfo();
+            this.renderSheets();
         });
     },
     
-    // Настройка обработчиков событий (вызывается один раз)
+    // Настройка обработчиков событий
     setupEventListeners() {
-        // Кнопка добавления листа (в табах)
-        document.getElementById('add-sheet-btn').addEventListener('click', () => {
-            this.showNewSheetModal();
-        });
-        
         // Плавающая кнопка добавления листа
         document.getElementById('fab-add-sheet').addEventListener('click', () => {
             this.showNewSheetModal();
@@ -121,6 +112,11 @@ const CocoMoneyModule = {
         // Кнопка создания первого листа
         document.getElementById('create-first-sheet').addEventListener('click', () => {
             this.showNewSheetModal();
+        });
+        
+        // Кнопка назад
+        document.getElementById('btn-back').addEventListener('click', () => {
+            this.closeFullscreenSheet();
         });
         
         // Кнопка редактирования листа
@@ -133,11 +129,9 @@ const CocoMoneyModule = {
             this.showExportModal();
         });
         
-        // Кнопки сохранения/отмены редактирования
+        // Кнопки сохранения/отмены редактирования листа
         document.getElementById('save-sheet-btn').addEventListener('click', () => {
-            this.showConfirm('Сохранить изменения?', 'Вы уверены, что хотите сохранить изменения?', () => {
-                this.saveSheet();
-            });
+            this.saveSheet();
         });
         
         document.getElementById('cancel-edit-btn').addEventListener('click', () => {
@@ -150,7 +144,7 @@ const CocoMoneyModule = {
             }, 'danger');
         });
         
-        // Закрытие модального окна
+        // Закрытие модального окна нового листа
         document.getElementById('cancel-new-sheet').addEventListener('click', () => {
             this.hideNewSheetModal();
         });
@@ -172,9 +166,14 @@ const CocoMoneyModule = {
         document.getElementById('close-export').addEventListener('click', () => {
             this.hideExportModal();
         });
+        
+        // Редактирование расхода
+        document.getElementById('cancel-expense-edit').addEventListener('click', () => {
+            this.hideExpenseEditModal();
+        });
     },
     
-    // Настройка обработчиков форм (вызывается один раз)
+    // Настройка обработчиков форм
     setupFormHandlers() {
         // Форма создания нового листа
         const newSheetForm = document.getElementById('new-sheet-form');
@@ -191,6 +190,57 @@ const CocoMoneyModule = {
             e.preventDefault();
             await this.addExpense(e.target);
         });
+        
+        // Форма редактирования расхода
+        const editExpenseForm = document.getElementById('expense-edit-form');
+        editExpenseForm.removeEventListener('submit', this.handleEditExpenseSubmit);
+        editExpenseForm.addEventListener('submit', this.handleEditExpenseSubmit = async (e) => {
+            e.preventDefault();
+            await this.updateExpense(e.target);
+        });
+    },
+    
+    // Настройка жестов свайпа
+    setupSwipeGestures() {
+        const fullscreen = document.getElementById('sheet-fullscreen');
+        
+        // Touch события для мобильных устройств
+        fullscreen.addEventListener('touchstart', (e) => {
+            this.swipeStartX = e.touches[0].clientX;
+        });
+        
+        fullscreen.addEventListener('touchmove', (e) => {
+            if (!this.swipeStartX) return;
+            
+            const currentX = e.touches[0].clientX;
+            const diffX = currentX - this.swipeStartX;
+            
+            // Свайп вправо для закрытия
+            if (diffX > 0) {
+                fullscreen.style.transform = `translateX(${diffX}px)`;
+            }
+        });
+        
+        fullscreen.addEventListener('touchend', (e) => {
+            if (!this.swipeStartX) return;
+            
+            const endX = e.changedTouches[0].clientX;
+            const diffX = endX - this.swipeStartX;
+            
+            if (diffX > 100) {
+                // Закрываем если свайп больше 100px
+                fullscreen.classList.add('swipe-close');
+                setTimeout(() => {
+                    this.closeFullscreenSheet();
+                    fullscreen.classList.remove('swipe-close');
+                }, 300);
+            } else {
+                // Возвращаем на место
+                fullscreen.style.transform = '';
+            }
+            
+            this.swipeStartX = null;
+        });
     },
     
     // Загрузка данных с сервера
@@ -202,11 +252,8 @@ const CocoMoneyModule = {
             const sheets = await window.apiClient.incomeSheets.getAll();
             window.stateManager.setState('incomeSheets', sheets);
             
-            // Если есть листы, активируем первый
+            // Загружаем расходы для всех листов
             if (sheets.length > 0) {
-                window.stateManager.setState('activeSheetId', sheets[0].id);
-                
-                // Загружаем расходы для всех листов
                 const allExpenses = [];
                 for (const sheet of sheets) {
                     const expenses = await window.apiClient.expenses.getBySheet(sheet.id);
@@ -222,81 +269,90 @@ const CocoMoneyModule = {
         }
     },
     
-    // Рендеринг вкладок
-    renderTabs() {
-        const container = document.getElementById('tabs-container');
+    // Рендеринг карточек листов
+    renderSheets() {
+        const container = document.getElementById('sheets-grid');
         const sheets = window.stateManager.getState('incomeSheets');
-        const activeSheetId = window.stateManager.getState('activeSheetId');
+        const expenses = window.stateManager.getState('expenses');
         
         container.innerHTML = '';
         
         sheets.forEach(sheet => {
-            const tab = document.createElement('button');
-            tab.className = `income-tab ${sheet.id === activeSheetId ? 'active' : ''}`;
-            tab.innerHTML = `
-                <span>${sheet.name}</span>
-                <button class="tab-close" data-sheet-id="${sheet.id}">×</button>
+            const sheetExpenses = expenses.filter(e => e.income_sheet_id === sheet.id);
+            const totalExpenses = sheetExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+            const balance = parseFloat(sheet.income_amount) - totalExpenses;
+            
+            const card = document.createElement('div');
+            card.className = 'sheet-card';
+            card.innerHTML = `
+                <div class="sheet-card-header">
+                    <h3 class="sheet-card-title">${sheet.name}</h3>
+                    <span class="sheet-card-date">${this.formatDate(sheet.date)}</span>
+                </div>
+                <div class="sheet-card-stats">
+                    <div class="sheet-stat">
+                        <div class="sheet-stat-label">Доход</div>
+                        <div class="sheet-stat-value income">${this.formatMoney(sheet.income_amount)} ₽</div>
+                    </div>
+                    <div class="sheet-stat">
+                        <div class="sheet-stat-label">Расходы</div>
+                        <div class="sheet-stat-value expense">${this.formatMoney(totalExpenses)} ₽</div>
+                    </div>
+                    <div class="sheet-stat">
+                        <div class="sheet-stat-label">Баланс</div>
+                        <div class="sheet-stat-value">${this.formatMoney(balance)} ₽</div>
+                    </div>
+                </div>
             `;
             
-            // Клик по вкладке
-            tab.addEventListener('click', (e) => {
-                if (!e.target.classList.contains('tab-close')) {
-                    window.stateManager.setState('activeSheetId', sheet.id);
-                }
+            card.addEventListener('click', () => {
+                this.openFullscreenSheet(sheet.id);
             });
             
-            // Закрытие вкладки
-            tab.querySelector('.tab-close').addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.showConfirm('Удалить лист?', `Удалить лист "${sheet.name}"? Все расходы также будут удалены.`, () => {
-                    this.deleteSheet(sheet.id);
-                }, 'danger');
-            });
-            
-            container.appendChild(tab);
+            container.appendChild(card);
         });
     },
     
-    // Рендеринг активного листа
-    renderActiveSheet() {
-        const sheet = window.stateManager.getActiveSheet();
+    // Открыть лист на весь экран
+    openFullscreenSheet(sheetId) {
+        this.currentSheetId = sheetId;
+        const sheet = window.stateManager.getState('incomeSheets').find(s => s.id === sheetId);
         
-        if (!sheet) {
-            document.getElementById('sheet-info').classList.add('hidden');
-            document.getElementById('expenses-section').classList.add('hidden');
-            document.getElementById('edit-sheet-btn').classList.add('hidden');
-            document.getElementById('export-sheet-btn').classList.add('hidden');
-            
-            // Очищаем отображение старых данных
-            document.getElementById('sheet-name').textContent = 'Выберите лист';
-            document.getElementById('sheet-income').textContent = '0 ₽';
-            document.getElementById('sheet-expenses').textContent = '0 ₽';
-            document.getElementById('sheet-balance').textContent = '0 ₽';
-            document.getElementById('expenses-list').innerHTML = '';
-            return;
-        }
+        if (!sheet) return;
         
-        // Показываем информацию о листе
-        document.getElementById('sheet-info').classList.remove('hidden');
-        document.getElementById('expenses-section').classList.remove('hidden');
-        document.getElementById('edit-sheet-btn').classList.remove('hidden');
-        document.getElementById('export-sheet-btn').classList.remove('hidden');
+        // Обновляем заголовок
+        document.getElementById('fullscreen-sheet-title').textContent = sheet.name;
+        
+        // Показываем полноэкранный вид
+        document.getElementById('sheet-fullscreen').classList.remove('hidden');
+        document.getElementById('sheet-fullscreen').style.transform = '';
         
         // Обновляем информацию
         this.updateSheetInfo();
         this.renderExpenses();
+        
+        // Скрываем форму редактирования
+        this.hideEditForm();
+    },
+    
+    // Закрыть полноэкранный вид
+    closeFullscreenSheet() {
+        document.getElementById('sheet-fullscreen').classList.add('hidden');
+        this.currentSheetId = null;
+        this.hideEditForm();
     },
     
     // Обновление информации о листе
     updateSheetInfo() {
-        const sheet = window.stateManager.getActiveSheet();
+        if (!this.currentSheetId) return;
+        
+        const sheet = window.stateManager.getState('incomeSheets').find(s => s.id === this.currentSheetId);
         if (!sheet) return;
         
-        const expenses = window.stateManager.getActiveSheetExpenses();
+        const expenses = window.stateManager.getState('expenses').filter(e => e.income_sheet_id === this.currentSheetId);
         const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
         const balance = parseFloat(sheet.income_amount) - totalExpenses;
         
-        document.getElementById('sheet-name').textContent = sheet.name;
         document.getElementById('sheet-income').textContent = `${this.formatMoney(sheet.income_amount)} ₽`;
         document.getElementById('sheet-expenses').textContent = `${this.formatMoney(totalExpenses)} ₽`;
         document.getElementById('sheet-balance').textContent = `${this.formatMoney(balance)} ₽`;
@@ -304,8 +360,10 @@ const CocoMoneyModule = {
     
     // Рендеринг расходов
     renderExpenses() {
+        if (!this.currentSheetId) return;
+        
         const container = document.getElementById('expenses-list');
-        const expenses = window.stateManager.getActiveSheetExpenses();
+        const expenses = window.stateManager.getState('expenses').filter(e => e.income_sheet_id === this.currentSheetId);
         
         container.innerHTML = '';
         
@@ -324,14 +382,24 @@ const CocoMoneyModule = {
                     <div class="expense-date">${this.formatDate(expense.created_at)}</div>
                 </div>
                 <div class="expense-actions">
+                    <button class="btn-icon edit" data-expense-id="${expense.id}" title="Редактировать">
+                        ✏️
+                    </button>
                     <button class="btn-icon delete" data-expense-id="${expense.id}" title="Удалить">
                         🗑️
                     </button>
                 </div>
             `;
             
+            // Обработчик редактирования
+            item.querySelector('.edit').addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.showExpenseEditModal(expense);
+            });
+            
             // Обработчик удаления
-            item.querySelector('.delete').addEventListener('click', () => {
+            item.querySelector('.delete').addEventListener('click', (e) => {
+                e.stopPropagation();
                 this.showConfirm('Удалить расход?', 'Вы уверены, что хотите удалить этот расход?', () => {
                     this.deleteExpense(expense.id);
                 }, 'danger');
@@ -381,7 +449,6 @@ const CocoMoneyModule = {
             const sheets = window.stateManager.getState('incomeSheets');
             sheets.push(sheet);
             window.stateManager.setState('incomeSheets', sheets);
-            window.stateManager.setState('activeSheetId', sheet.id);
             
             this.hideNewSheetModal();
             this.showToast('Лист доходов создан', 'success');
@@ -394,8 +461,17 @@ const CocoMoneyModule = {
     
     // Показать форму редактирования
     showEditForm() {
-        const sheet = window.stateManager.getActiveSheet();
+        if (!this.currentSheetId) return;
+        
+        const sheet = window.stateManager.getState('incomeSheets').find(s => s.id === this.currentSheetId);
         if (!sheet) return;
+        
+        // Сохраняем оригинальные данные
+        this.originalSheetData = {
+            name: sheet.name,
+            income_amount: sheet.income_amount,
+            date: sheet.date
+        };
         
         document.getElementById('sheet-info').classList.add('hidden');
         document.getElementById('sheet-edit-form').classList.remove('hidden');
@@ -410,66 +486,73 @@ const CocoMoneyModule = {
     hideEditForm() {
         document.getElementById('sheet-info').classList.remove('hidden');
         document.getElementById('sheet-edit-form').classList.add('hidden');
+        this.originalSheetData = null;
     },
     
     // Сохранение изменений листа
     async saveSheet() {
-        const sheet = window.stateManager.getActiveSheet();
-        if (!sheet) return;
+        if (!this.currentSheetId) return;
         
         const name = document.getElementById('edit-sheet-name').value;
         const income = document.getElementById('edit-sheet-income').value;
         const date = document.getElementById('edit-sheet-date').value;
         
-        this.showLoader(true);
-        
-        try {
-            const updated = await window.apiClient.incomeSheets.update(sheet.id, {
-                name,
-                income_amount: parseFloat(income),
-                date
-            });
-            
-            // Обновляем в состоянии
-            const sheets = window.stateManager.getState('incomeSheets');
-            const index = sheets.findIndex(s => s.id === sheet.id);
-            sheets[index] = updated;
-            window.stateManager.setState('incomeSheets', sheets);
-            
+        // Проверяем, были ли изменения
+        if (this.originalSheetData &&
+            this.originalSheetData.name === name &&
+            parseFloat(this.originalSheetData.income_amount) === parseFloat(income) &&
+            this.originalSheetData.date === date) {
+            // Ничего не изменилось, просто закрываем форму
             this.hideEditForm();
-            this.showToast('Изменения сохранены', 'success');
-        } catch (error) {
-            this.showToast('Ошибка сохранения', 'error');
-        } finally {
-            this.showLoader(false);
+            return;
         }
+        
+        this.showConfirm('Сохранить изменения?', 'Вы уверены, что хотите сохранить изменения?', async () => {
+            this.showLoader(true);
+            
+            try {
+                const updated = await window.apiClient.incomeSheets.update(this.currentSheetId, {
+                    name,
+                    income_amount: parseFloat(income),
+                    date
+                });
+                
+                // Обновляем в состоянии
+                const sheets = window.stateManager.getState('incomeSheets');
+                const index = sheets.findIndex(s => s.id === this.currentSheetId);
+                sheets[index] = updated;
+                window.stateManager.setState('incomeSheets', sheets);
+                
+                // Обновляем заголовок
+                document.getElementById('fullscreen-sheet-title').textContent = name;
+                
+                this.hideEditForm();
+                this.showToast('Изменения сохранены', 'success');
+            } catch (error) {
+                this.showToast('Ошибка сохранения', 'error');
+            } finally {
+                this.showLoader(false);
+            }
+        });
     },
     
     // Удаление листа
-    async deleteSheet(sheetId) {
-        const currentSheet = window.stateManager.getActiveSheet();
-        sheetId = sheetId || (currentSheet && currentSheet.id);
-        
-        if (!sheetId) return;
+    async deleteSheet() {
+        if (!this.currentSheetId) return;
         
         this.showLoader(true);
         
         try {
-            await window.apiClient.incomeSheets.delete(sheetId);
+            await window.apiClient.incomeSheets.delete(this.currentSheetId);
             
             // Удаляем из состояния
-            const sheets = window.stateManager.getState('incomeSheets').filter(s => s.id !== sheetId);
-            const expenses = window.stateManager.getState('expenses').filter(e => e.income_sheet_id !== sheetId);
+            const sheets = window.stateManager.getState('incomeSheets').filter(s => s.id !== this.currentSheetId);
+            const expenses = window.stateManager.getState('expenses').filter(e => e.income_sheet_id !== this.currentSheetId);
             
             window.stateManager.setState('incomeSheets', sheets);
             window.stateManager.setState('expenses', expenses);
             
-            // Если удалили активный лист, активируем первый
-            if (window.stateManager.getState('activeSheetId') === sheetId) {
-                window.stateManager.setState('activeSheetId', sheets[0]?.id || null);
-            }
-            
-            this.hideEditForm();
+            this.closeFullscreenSheet();
             this.showToast('Лист удален', 'success');
         } catch (error) {
             this.showToast('Ошибка удаления', 'error');
@@ -480,8 +563,7 @@ const CocoMoneyModule = {
     
     // Добавление расхода
     async addExpense(form) {
-        const sheet = window.stateManager.getActiveSheet();
-        if (!sheet) return;
+        if (!this.currentSheetId) return;
         
         const amount = form.elements['expense-amount'].value;
         const note = form.elements['expense-note'].value;
@@ -490,7 +572,7 @@ const CocoMoneyModule = {
         
         try {
             const expense = await window.apiClient.expenses.create({
-                income_sheet_id: sheet.id,
+                income_sheet_id: this.currentSheetId,
                 amount: parseFloat(amount),
                 note
             });
@@ -504,6 +586,56 @@ const CocoMoneyModule = {
             this.showToast('Расход добавлен', 'success');
         } catch (error) {
             this.showToast('Ошибка добавления расхода', 'error');
+        } finally {
+            this.showLoader(false);
+        }
+    },
+    
+    // Показать модальное окно редактирования расхода
+    showExpenseEditModal(expense) {
+        this.editingExpenseId = expense.id;
+        
+        document.getElementById('edit-expense-id').value = expense.id;
+        document.getElementById('edit-expense-amount').value = expense.amount;
+        document.getElementById('edit-expense-note').value = expense.note || '';
+        
+        document.getElementById('expense-edit-modal').classList.remove('hidden');
+        document.getElementById('edit-expense-amount').focus();
+    },
+    
+    // Скрыть модальное окно редактирования расхода
+    hideExpenseEditModal() {
+        document.getElementById('expense-edit-modal').classList.add('hidden');
+        document.getElementById('expense-edit-form').reset();
+        this.editingExpenseId = null;
+    },
+    
+    // Обновление расхода
+    async updateExpense(form) {
+        const expenseId = form.elements['edit-expense-id'].value;
+        const amount = form.elements['edit-expense-amount'].value;
+        const note = form.elements['edit-expense-note'].value;
+        
+        this.showLoader(true);
+        
+        try {
+            const updated = await window.apiClient.expenses.update(expenseId, {
+                amount: parseFloat(amount),
+                note
+            });
+            
+            // Обновляем в состоянии
+            const expenses = window.stateManager.getState('expenses');
+            const index = expenses.findIndex(e => e.id === parseInt(expenseId));
+            if (index !== -1) {
+                expenses[index] = { ...expenses[index], ...updated };
+                window.stateManager.setState('expenses', expenses);
+            }
+            
+            this.hideExpenseEditModal();
+            this.showToast('Расход обновлен', 'success');
+        } catch (error) {
+            this.showToast('Ошибка обновления расхода', 'error');
         } finally {
             this.showLoader(false);
         }
@@ -554,10 +686,12 @@ const CocoMoneyModule = {
     
     // Показать модальное окно экспорта
     showExportModal() {
-        const sheet = window.stateManager.getActiveSheet();
+        if (!this.currentSheetId) return;
+        
+        const sheet = window.stateManager.getState('incomeSheets').find(s => s.id === this.currentSheetId);
         if (!sheet) return;
         
-        const expenses = window.stateManager.getActiveSheetExpenses();
+        const expenses = window.stateManager.getState('expenses').filter(e => e.income_sheet_id === this.currentSheetId);
         const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
         const balance = parseFloat(sheet.income_amount) - totalExpenses;
         
@@ -602,7 +736,9 @@ const CocoMoneyModule = {
     
     // Скачать данные экспорта
     downloadExportData() {
-        const sheet = window.stateManager.getActiveSheet();
+        if (!this.currentSheetId) return;
+        
+        const sheet = window.stateManager.getState('incomeSheets').find(s => s.id === this.currentSheetId);
         if (!sheet) return;
         
         const blob = new Blob([this.exportData], { type: 'text/plain;charset=utf-8' });
