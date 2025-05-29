@@ -76,12 +76,22 @@
                     <h1>Добро пожаловать в Coco Instrument</h1>
                     <p class="home-description">Современные инструменты для управления вашими финансами</p>
                     
-                    <div class="tools-grid">
-                        <a href="#/coco-money" class="tool-card">
+                    <!-- Поиск инструментов -->
+                    <div class="search-container">
+                        <input type="text" id="tool-search" class="search-input" placeholder="Поиск инструментов...">
+                        <span class="search-icon">🔍</span>
+                    </div>
+                    
+                    <div class="tools-grid" id="tools-grid">
+                        <a href="#/coco-money" class="tool-card" data-tool-name="Coco Money" data-tool-desc="Управление доходами и расходами">
                             <div class="tool-icon">💰</div>
                             <h3>Coco Money</h3>
                             <p>Управление доходами и расходами</p>
                         </a>
+                    </div>
+                    
+                    <div id="no-results" class="no-results hidden">
+                        <p>Инструменты не найдены</p>
                     </div>
                 </div>
             </div>
@@ -94,13 +104,48 @@
                         <h2>Coco Money</h2>
                         <div class="balance-info">
                             <span class="balance-label">Общий баланс</span>
-                            <span id="total-balance" class="balance-amount">0 ₽</span>
+                            <span id="total-balance" class="balance-amount">0 руб.</span>
                         </div>
                     </div>
 
                     <!-- Сетка карточек листов -->
                     <div id="sheets-grid" class="sheets-grid">
                         <!-- Динамически создаваемые карточки -->
+                    </div>
+                    
+                    <!-- Статистика -->
+                    <div id="statistics-section" class="statistics-section">
+                        <h3>Статистика</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon">📊</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">Всего листов</div>
+                                    <div class="stat-value" id="stat-total-sheets">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">💵</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">Общий доход</div>
+                                    <div class="stat-value" id="stat-total-income">0 руб.</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">💸</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">Общие расходы</div>
+                                    <div class="stat-value" id="stat-total-expenses">0 руб.</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">📈</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">Средний расход</div>
+                                    <div class="stat-value" id="stat-avg-expense">0 руб.</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Пустое состояние -->
@@ -129,15 +174,15 @@
                                 <div class="sheet-details">
                                     <div class="detail-item">
                                         <span>Доход</span>
-                                        <span id="sheet-income">0 ₽</span>
+                                        <span id="sheet-income">0 руб.</span>
                                     </div>
                                     <div class="detail-item">
                                         <span>Расходы</span>
-                                        <span id="sheet-expenses">0 ₽</span>
+                                        <span id="sheet-expenses">0 руб.</span>
                                     </div>
                                     <div class="detail-item">
                                         <span>Остаток</span>
-                                        <span id="sheet-balance">0 ₽</span>
+                                        <span id="sheet-balance">0 руб.</span>
                                     </div>
                                 </div>
                             </div>
