@@ -57,6 +57,7 @@ const CocoMoneyModule = {
         } else {
             this.hideEmptyState();
             this.renderSheets();
+            this.updateStatistics();
         }
         
         this.updateBalance();
@@ -66,6 +67,7 @@ const CocoMoneyModule = {
     showEmptyState() {
         document.getElementById('empty-state').classList.remove('hidden');
         document.getElementById('sheets-grid').classList.add('hidden');
+        document.getElementById('statistics-section').classList.add('hidden');
         document.getElementById('fab-add-sheet').classList.add('hidden');
     },
     
@@ -73,6 +75,7 @@ const CocoMoneyModule = {
     hideEmptyState() {
         document.getElementById('empty-state').classList.add('hidden');
         document.getElementById('sheets-grid').classList.remove('hidden');
+        document.getElementById('statistics-section').classList.remove('hidden');
         document.getElementById('fab-add-sheet').classList.remove('hidden');
     },
     
@@ -87,6 +90,7 @@ const CocoMoneyModule = {
             } else {
                 this.hideEmptyState();
                 this.renderSheets();
+                this.updateStatistics();
             }
             this.updateBalance();
         });
@@ -98,6 +102,7 @@ const CocoMoneyModule = {
                 this.renderExpenses();
             }
             this.updateBalance();
+            this.updateStatistics();
             this.renderSheets();
         });
     },
@@ -215,9 +220,11 @@ const CocoMoneyModule = {
             const currentX = e.touches[0].clientX;
             const diffX = currentX - this.swipeStartX;
             
-            // Свайп вправо для закрытия
-            if (diffX > 0) {
-                fullscreen.style.transform = `translateX(${diffX}px)`;
+            // Свайп вправо для закрытия (показываем визуальный эффект только после 50px)
+            if (diffX > 50) {
+                const translateX = Math.min(diffX - 50, 300); // Ограничиваем максимальный сдвиг
+                fullscreen.style.transform = `translateX(${translateX}px)`;
+                fullscreen.style.opacity = 1 - (translateX / 300) * 0.3; // Плавное затухание
             }
         });
         
@@ -227,16 +234,22 @@ const CocoMoneyModule = {
             const endX = e.changedTouches[0].clientX;
             const diffX = endX - this.swipeStartX;
             
-            if (diffX > 100) {
-                // Закрываем если свайп больше 100px
+            if (diffX > 150) {
+                // Закрываем если свайп больше 150px (увеличено с 100px)
                 fullscreen.classList.add('swipe-close');
                 setTimeout(() => {
                     this.closeFullscreenSheet();
                     fullscreen.classList.remove('swipe-close');
+                    fullscreen.style.opacity = '';
                 }, 300);
             } else {
-                // Возвращаем на место
+                // Возвращаем на место с анимацией
+                fullscreen.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
                 fullscreen.style.transform = '';
+                fullscreen.style.opacity = '';
+                setTimeout(() => {
+                    fullscreen.style.transition = '';
+                }, 300);
             }
             
             this.swipeStartX = null;
@@ -292,15 +305,15 @@ const CocoMoneyModule = {
                 <div class="sheet-card-stats">
                     <div class="sheet-stat">
                         <div class="sheet-stat-label">Доход</div>
-                        <div class="sheet-stat-value income">${this.formatMoney(sheet.income_amount)} ₽</div>
+                        <div class="sheet-stat-value income">${this.formatMoney(sheet.income_amount)} руб.</div>
                     </div>
                     <div class="sheet-stat">
                         <div class="sheet-stat-label">Расходы</div>
-                        <div class="sheet-stat-value expense">${this.formatMoney(totalExpenses)} ₽</div>
+                        <div class="sheet-stat-value expense">${this.formatMoney(totalExpenses)} руб.</div>
                     </div>
                     <div class="sheet-stat">
                         <div class="sheet-stat-label">Баланс</div>
-                        <div class="sheet-stat-value">${this.formatMoney(balance)} ₽</div>
+                        <div class="sheet-stat-value">${this.formatMoney(balance)} руб.</div>
                     </div>
                 </div>
             `;
@@ -353,9 +366,9 @@ const CocoMoneyModule = {
         const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
         const balance = parseFloat(sheet.income_amount) - totalExpenses;
         
-        document.getElementById('sheet-income').textContent = `${this.formatMoney(sheet.income_amount)} ₽`;
-        document.getElementById('sheet-expenses').textContent = `${this.formatMoney(totalExpenses)} ₽`;
-        document.getElementById('sheet-balance').textContent = `${this.formatMoney(balance)} ₽`;
+        document.getElementById('sheet-income').textContent = `${this.formatMoney(sheet.income_amount)} руб.`;
+        document.getElementById('sheet-expenses').textContent = `${this.formatMoney(totalExpenses)} руб.`;
+        document.getElementById('sheet-balance').textContent = `${this.formatMoney(balance)} руб.`;
     },
     
     // Рендеринг расходов
@@ -377,7 +390,7 @@ const CocoMoneyModule = {
             item.className = 'expense-item';
             item.innerHTML = `
                 <div class="expense-info">
-                    <div class="expense-amount">${this.formatMoney(expense.amount)} ₽</div>
+                    <div class="expense-amount">${this.formatMoney(expense.amount)} руб.</div>
                     ${expense.note ? `<div class="expense-note">${expense.note}</div>` : ''}
                     <div class="expense-date">${this.formatDate(expense.created_at)}</div>
                 </div>
@@ -412,7 +425,7 @@ const CocoMoneyModule = {
     // Обновление общего баланса
     updateBalance() {
         const totalBalance = window.stateManager.calculateTotalBalance();
-        document.getElementById('total-balance').textContent = `${this.formatMoney(totalBalance)} ₽`;
+        document.getElementById('total-balance').textContent = `${this.formatMoney(totalBalance)} руб.`;
     },
     
     // Показать модальное окно нового листа
@@ -479,7 +492,10 @@ const CocoMoneyModule = {
         // Заполняем форму текущими данными
         document.getElementById('edit-sheet-name').value = sheet.name;
         document.getElementById('edit-sheet-income').value = sheet.income_amount;
-        document.getElementById('edit-sheet-date').value = sheet.date;
+        // Форматируем дату для input[type="date"]
+        const date = new Date(sheet.date);
+        const formattedDate = date.toISOString().split('T')[0];
+        document.getElementById('edit-sheet-date').value = formattedDate;
     },
     
     // Скрыть форму редактирования
@@ -699,15 +715,15 @@ const CocoMoneyModule = {
         let exportText = `ЛИСТ ДОХОДОВ: ${sheet.name}\n`;
         exportText += `Дата: ${this.formatDate(sheet.date)}\n`;
         exportText += `=====================================\n\n`;
-        exportText += `Доход: ${this.formatMoney(sheet.income_amount)} ₽\n`;
-        exportText += `Расходы: ${this.formatMoney(totalExpenses)} ₽\n`;
-        exportText += `Остаток: ${this.formatMoney(balance)} ₽\n\n`;
+        exportText += `Доход: ${this.formatMoney(sheet.income_amount)} руб.\n`;
+        exportText += `Расходы: ${this.formatMoney(totalExpenses)} руб.\n`;
+        exportText += `Остаток: ${this.formatMoney(balance)} руб.\n\n`;
         
         if (expenses.length > 0) {
             exportText += `СПИСОК РАСХОДОВ:\n`;
             exportText += `=====================================\n`;
             expenses.forEach((expense, index) => {
-                exportText += `${index + 1}. ${this.formatMoney(expense.amount)} ₽`;
+                exportText += `${index + 1}. ${this.formatMoney(expense.amount)} руб.`;
                 if (expense.note) {
                     exportText += ` - ${expense.note}`;
                 }
@@ -750,6 +766,27 @@ const CocoMoneyModule = {
         URL.revokeObjectURL(url);
         
         this.showToast('Файл скачан', 'success');
+    },
+    
+    // Обновление статистики
+    updateStatistics() {
+        const sheets = window.stateManager.getState('incomeSheets');
+        const expenses = window.stateManager.getState('expenses');
+        
+        // Общее количество листов
+        document.getElementById('stat-total-sheets').textContent = sheets.length;
+        
+        // Общий доход
+        const totalIncome = sheets.reduce((sum, sheet) => sum + parseFloat(sheet.income_amount), 0);
+        document.getElementById('stat-total-income').textContent = `${this.formatMoney(totalIncome)} руб.`;
+        
+        // Общие расходы
+        const totalExpenses = expenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+        document.getElementById('stat-total-expenses').textContent = `${this.formatMoney(totalExpenses)} руб.`;
+        
+        // Средний расход
+        const avgExpense = expenses.length > 0 ? totalExpenses / expenses.length : 0;
+        document.getElementById('stat-avg-expense').textContent = `${this.formatMoney(avgExpense)} руб.`;
     },
     
     // Утилиты
