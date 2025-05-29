@@ -31,7 +31,7 @@ const generateToken = (user) => {
         },
         JWT_SECRET,
         { 
-            expiresIn: '7d' // Токен действителен 7 дней
+            expiresIn: '365d' // Токен действителен 365 дней (1 год)
         }
     );
 };
