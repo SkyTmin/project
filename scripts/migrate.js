@@ -75,13 +75,13 @@ async function migrate() {
                 NEW.updated_at = CURRENT_TIMESTAMP;
                 RETURN NEW;
             END;
-            $$ LANGUAGE 'plpgsql';
+            $$ language 'plpgsql'
         `);
         console.log('✓ Update timestamp function created');
         
-        // Триггер для users
+        // Создаём триггеры для автоматического обновления updated_at
         await query(`
-            DO $$
+            DO $$ 
             BEGIN
                 IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_users_updated_at') THEN
                     CREATE TRIGGER update_users_updated_at 
@@ -89,14 +89,12 @@ async function migrate() {
                     FOR EACH ROW 
                     EXECUTE FUNCTION update_updated_at_column();
                 END IF;
-            END
-            $$;
+            END $$
         `);
         console.log('✓ Trigger for users.updated_at created');
-
-        // Триггер для income_sheets
+        
         await query(`
-            DO $$
+            DO $$ 
             BEGIN
                 IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_income_sheets_updated_at') THEN
                     CREATE TRIGGER update_income_sheets_updated_at 
@@ -104,14 +102,12 @@ async function migrate() {
                     FOR EACH ROW 
                     EXECUTE FUNCTION update_updated_at_column();
                 END IF;
-            END
-            $$;
+            END $$
         `);
         console.log('✓ Trigger for income_sheets.updated_at created');
-
-        // Триггер для expenses
+        
         await query(`
-            DO $$
+            DO $
             BEGIN
                 IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_expenses_updated_at') THEN
                     CREATE TRIGGER update_expenses_updated_at 
@@ -120,35 +116,45 @@ async function migrate() {
                     EXECUTE FUNCTION update_updated_at_column();
                 END IF;
             END
-            $$;
+            $;
         `);
         console.log('✓ Trigger for expenses.updated_at created');
         
-        // Добавляем exclude_from_balance при необходимости
         await query(`
-            DO $$
+            DO $$ 
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_expenses_updated_at') THEN
+                    CREATE TRIGGER update_expenses_updated_at 
+                    BEFORE UPDATE ON expenses 
+                    FOR EACH ROW 
+                    EXECUTE FUNCTION update_updated_at_column();
+                END IF;
+            END $$
+        `);
+        console.log('✓ Trigger for expenses.updated_at created');
+        
+        // Добавляем новые колонки если их еще нет (для обновления существующих БД)
+        await query(`
+            DO $ 
             BEGIN
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                               WHERE table_name = 'income_sheets' 
                               AND column_name = 'exclude_from_balance') THEN
                     ALTER TABLE income_sheets ADD COLUMN exclude_from_balance BOOLEAN DEFAULT FALSE;
                 END IF;
-            END
-            $$;
+            END $
         `);
         console.log('✓ Added exclude_from_balance column to income_sheets if not exists');
         
-        // Добавляем is_preliminary при необходимости
         await query(`
-            DO $$
+            DO $ 
             BEGIN
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                               WHERE table_name = 'expenses' 
                               AND column_name = 'is_preliminary') THEN
                     ALTER TABLE expenses ADD COLUMN is_preliminary BOOLEAN DEFAULT FALSE;
                 END IF;
-            END
-            $$;
+            END $
         `);
         console.log('✓ Added is_preliminary column to expenses if not exists');
         
