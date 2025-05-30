@@ -35,21 +35,26 @@ const CocoMoneyModule = {
     render() {
         // Показываем навигацию
         const nav = document.getElementById('main-nav');
-        nav.classList.remove('hidden');
+        if (nav) nav.classList.remove('hidden');
         
         // Обновляем email пользователя
         const user = window.stateManager.getState('user');
         if (user) {
-            document.getElementById('user-email').textContent = user.email;
+            const emailElement = document.getElementById('user-email');
+            if (emailElement) emailElement.textContent = user.email;
         }
         
         // Скрываем другие модули и показываем Coco Money
-        document.getElementById('auth-module').classList.add('hidden');
-        document.getElementById('home-module').classList.add('hidden');
-        document.getElementById('coco-money-module').classList.remove('hidden');
+        const authModule = document.getElementById('auth-module');
+        const homeModule = document.getElementById('home-module');
+        const cocoMoneyModule = document.getElementById('coco-money-module');
+        if (authModule) authModule.classList.add('hidden');
+        if (homeModule) homeModule.classList.add('hidden');
+        if (cocoMoneyModule) cocoMoneyModule.classList.remove('hidden');
         
         // Скрываем полноэкранный вид
-        document.getElementById('sheet-fullscreen').classList.add('hidden');
+        const fullscreenSheet = document.getElementById('sheet-fullscreen');
+        if (fullscreenSheet) fullscreenSheet.classList.add('hidden');
         
         // Проверяем наличие листов
         const sheets = window.stateManager.getState('incomeSheets');
@@ -66,18 +71,28 @@ const CocoMoneyModule = {
     
     // Показать пустое состояние
     showEmptyState() {
-        document.getElementById('empty-state').classList.remove('hidden');
-        document.getElementById('sheets-grid').classList.add('hidden');
-        document.getElementById('statistics-section').classList.add('hidden');
-        document.getElementById('fab-add-sheet').classList.add('hidden');
+        const emptyStateElement = document.getElementById('empty-state');
+        const sheetsGridElement = document.getElementById('sheets-grid');
+        const statsSection = document.getElementById('statistics-section');
+        const fabAddSheet = document.getElementById('fab-add-sheet');
+
+        if (emptyStateElement) emptyStateElement.classList.remove('hidden');
+        if (sheetsGridElement) sheetsGridElement.classList.add('hidden');
+        if (statsSection) statsSection.classList.add('hidden');
+        if (fabAddSheet) fabAddSheet.classList.add('hidden');
     },
     
     // Скрыть пустое состояние
     hideEmptyState() {
-        document.getElementById('empty-state').classList.add('hidden');
-        document.getElementById('sheets-grid').classList.remove('hidden');
-        document.getElementById('statistics-section').classList.remove('hidden');
-        document.getElementById('fab-add-sheet').classList.remove('hidden');
+        const emptyStateElement = document.getElementById('empty-state');
+        const sheetsGridElement = document.getElementById('sheets-grid');
+        const statsSection = document.getElementById('statistics-section');
+        const fabAddSheet = document.getElementById('fab-add-sheet');
+
+        if (emptyStateElement) emptyStateElement.classList.add('hidden');
+        if (sheetsGridElement) sheetsGridElement.classList.remove('hidden');
+        if (statsSection) statsSection.classList.remove('hidden');
+        if (fabAddSheet) fabAddSheet.classList.remove('hidden');
     },
     
     // Подписка на изменения состояния
@@ -186,6 +201,11 @@ const CocoMoneyModule = {
         document.getElementById('cancel-expense-edit').addEventListener('click', () => {
             this.hideExpenseEditModal();
         });
+    },
+
+    // Остальной код модуля остаётся прежним...
+};
+
     },
     
     // Настройка обработчиков форм
