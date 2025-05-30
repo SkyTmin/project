@@ -57,11 +57,37 @@
 }
 
 /* Сетка карточек листов доходов */
+.sheets-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.sheets-section {
+  background: var(--white);
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.sheets-section h3 {
+  font-size: 1.25rem;
+  color: var(--brown);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
 .sheets-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
-  margin-bottom: 2rem;
+}
+
+.empty-sheets {
+  text-align: center;
+  padding: 2rem;
+  color: var(--brown-light);
+  font-style: italic;
 }
 
 .sheet-card {
@@ -73,6 +99,25 @@
   transition: var(--transition);
   position: relative;
   overflow: hidden;
+}
+
+.sheet-card.preliminary {
+  background: var(--beige-light);
+  border: 2px dashed var(--brown-light);
+}
+
+.sheet-card.preliminary::after {
+  content: 'Предварительный';
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: var(--brown-light);
+  color: var(--white);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .sheet-card::before {
@@ -526,6 +571,7 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 0.25rem;
+  text-align: center;
 }
 
 .stat-value {
