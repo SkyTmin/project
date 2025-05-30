@@ -108,8 +108,7 @@ async function migrate() {
         
         await query(`
             DO $$ 
-            BEGIN
-                IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_expenses_updated_at') THEN
+            BEGINIF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_expenses_updated_at') THEN
                     CREATE TRIGGER update_expenses_updated_at 
                     BEFORE UPDATE ON expenses 
                     FOR EACH ROW 
