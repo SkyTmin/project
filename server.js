@@ -67,6 +67,11 @@ app.use('/api/auth', authRoutes);
 app.use('/api/income-sheets', incomeSheetsRoutes);
 app.use('/api/expenses', expensesRoutes);
 
+// 🔧 ДОБАВЛЕНО: корневой маршрут для healthcheck от Railway
+app.get('/', (req, res) => {
+    res.json({ status: 'ok', home: true });
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
