@@ -109,8 +109,18 @@
                     </div>
 
                     <!-- Сетка карточек листов -->
-                    <div id="sheets-grid" class="sheets-grid">
-                        <!-- Динамически создаваемые карточки -->
+                    <div class="sheets-container">
+                        <div class="sheets-section">
+                            <h3>Листы доходов</h3>
+                            <div id="regular-sheets" class="sheets-grid">
+                            </div>
+                        </div>
+                        
+                        <div class="sheets-section">
+                            <h3>Предварительные доходы</h3>
+                            <div id="preliminary-sheets" class="sheets-grid">
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Статистика -->
@@ -203,6 +213,10 @@
                                     <input type="checkbox" id="edit-sheet-exclude">
                                     <span>Исключить из общего баланса</span>
                                 </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="edit-sheet-preliminary">
+                                    <span>Предварительный доход</span>
+                                </label>
                                 <div class="form-actions">
                                     <button id="save-sheet-btn" class="btn-primary">Сохранить</button>
                                     <button id="cancel-edit-btn" class="btn-secondary">Отменить</button>
@@ -258,13 +272,17 @@
                     </div>
 
                     <!-- Форма создания нового листа -->
-                    <div id="new-sheet-modal" class="modal hidden">
+                            <div id="new-sheet-modal" class="modal hidden">
                         <div class="modal-content">
                             <h3>Новый лист доходов</h3>
                             <form id="new-sheet-form">
                                 <input type="text" id="new-sheet-name" placeholder="Название" required>
                                 <input type="number" id="new-sheet-income" placeholder="Сумма дохода" required>
                                 <input type="date" id="new-sheet-date" required>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="new-sheet-preliminary">
+                                    <span>Предварительный доход</span>
+                                </label>
                                 <div class="form-actions">
                                     <button type="submit" class="btn-primary">Создать</button>
                                     <button type="button" id="cancel-new-sheet" class="btn-secondary">Отмена</button>
