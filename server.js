@@ -1,4 +1,3 @@
-// server.js - Основной серверный файл
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
@@ -15,10 +14,8 @@ const { errorHandler } = require('./middleware/errorHandler');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Trust proxy для Railway
 app.set('trust proxy', true);
 
-// Middleware для безопасности
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -35,61 +32,41 @@ app.use(helmet({
     },
 }));
 
-// Сжатие ответов
 app.use(compression());
-
-// CORS
 app.use(cors({
     origin: process.env.CLIENT_URL || '*',
     credentials: true
 }));
 
-// Rate limiting
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 минут
-    max: 100, // максимум 100 запросов
+    windowMs: 15 * 60 * 1000,
+    max: 100,
     standardHeaders: true,
     legacyHeaders: false,
 });
 app.use('/api', limiter);
 
-// Парсинг JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Статические файлы
 app.use(express.static('public'));
 app.use('/css', express.static(path.join(__dirname, 'public/css')));
 app.use('/js', express.static(path.join(__dirname, 'public/js')));
 
-// API маршруты
 app.use('/api/auth', authRoutes);
 app.use('/api/income-sheets', incomeSheetsRoutes);
 app.use('/api/expenses', expensesRoutes);
 
-// 🔧 ДОБАВЛЕНО: корневой маршрут для healthcheck от Railway
-app.get('/', (req, res) => {
-    res.json({ status: 'ok', home: true });
-});
-
-// Health check endpoint
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Обработка всех остальных маршрутов (для SPA)
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Обработка ошибок
-app.use((err, req, res, next) => {
-    console.error(err);
-    res.status(500).json({ error: 'Internal Server Error' });
-});
+app.use(errorHandler);
 
-// Запуск сервера
 app.listen(PORT, () => {
-    console.log(`Coco Instrument server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
