@@ -1,4 +1,3 @@
-// scripts/migrate.js - Скрипт создания таблиц в базе данных
 const { query, pool } = require('../config/db');
 require('dotenv').config();
 
@@ -6,7 +5,6 @@ async function migrate() {
     console.log('Starting database migration...');
     
     try {
-        // Создаём таблицу пользователей
         await query(`
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
@@ -19,7 +17,6 @@ async function migrate() {
         `);
         console.log('✓ Users table created');
         
-        // Создаём таблицу листов доходов
         await query(`
             CREATE TABLE IF NOT EXISTS income_sheets (
                 id SERIAL PRIMARY KEY,
@@ -34,7 +31,6 @@ async function migrate() {
         `);
         console.log('✓ Income sheets table created');
         
-        // Создаём таблицу расходов
         await query(`
             CREATE TABLE IF NOT EXISTS expenses (
                 id SERIAL PRIMARY KEY,
@@ -48,26 +44,11 @@ async function migrate() {
         `);
         console.log('✓ Expenses table created');
         
-        // Индексы
-        await query(`
-            CREATE INDEX IF NOT EXISTS idx_income_sheets_user_id 
-            ON income_sheets(user_id)
-        `);
-        console.log('✓ Index on income_sheets.user_id created');
+        await query(`CREATE INDEX IF NOT EXISTS idx_income_sheets_user_id ON income_sheets(user_id)`);
+        await query(`CREATE INDEX IF NOT EXISTS idx_expenses_income_sheet_id ON expenses(income_sheet_id)`);
+        await query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
+        console.log('✓ Indexes created');
         
-        await query(`
-            CREATE INDEX IF NOT EXISTS idx_expenses_income_sheet_id 
-            ON expenses(income_sheet_id)
-        `);
-        console.log('✓ Index on expenses.income_sheet_id created');
-        
-        await query(`
-            CREATE INDEX IF NOT EXISTS idx_users_email 
-            ON users(email)
-        `);
-        console.log('✓ Index on users.email created');
-        
-        // Функция обновления поля updated_at
         await query(`
             CREATE OR REPLACE FUNCTION update_updated_at_column()
             RETURNS TRIGGER AS $$
@@ -79,72 +60,46 @@ async function migrate() {
         `);
         console.log('✓ Update timestamp function created');
         
-        // Триггеры
-        await query(`
-            DO $$ 
-            BEGIN
-                IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_users_updated_at') THEN
-                    CREATE TRIGGER update_users_updated_at 
-                    BEFORE UPDATE ON users 
-                    FOR EACH ROW 
-                    EXECUTE FUNCTION update_updated_at_column();
-                END IF;
-            END $$;
-        `);
-        console.log('✓ Trigger for users.updated_at created');
+        const triggers = [
+            { table: 'users', name: 'update_users_updated_at' },
+            { table: 'income_sheets', name: 'update_income_sheets_updated_at' },
+            { table: 'expenses', name: 'update_expenses_updated_at' }
+        ];
         
-        await query(`
-            DO $$ 
-            BEGIN
-                IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_income_sheets_updated_at') THEN
-                    CREATE TRIGGER update_income_sheets_updated_at 
-                    BEFORE UPDATE ON income_sheets 
-                    FOR EACH ROW 
-                    EXECUTE FUNCTION update_updated_at_column();
-                END IF;
-            END $$;
-        `);
-        console.log('✓ Trigger for income_sheets.updated_at created');
+        for (const { table, name } of triggers) {
+            await query(`
+                DO $$ 
+                BEGIN
+                    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = '${name}') THEN
+                        CREATE TRIGGER ${name} 
+                        BEFORE UPDATE ON ${table} 
+                        FOR EACH ROW 
+                        EXECUTE FUNCTION update_updated_at_column();
+                    END IF;
+                END $$;
+            `);
+        }
+        console.log('✓ Triggers created');
         
-        await query(`
-            DO $$ 
-            BEGIN
-                IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_expenses_updated_at') THEN
-                    CREATE TRIGGER update_expenses_updated_at 
-                    BEFORE UPDATE ON expenses 
-                    FOR EACH ROW 
-                    EXECUTE FUNCTION update_updated_at_column();
-                END IF;
-            END $$;
-        `);
-        console.log('✓ Trigger for expenses.updated_at created');
+        const columns = [
+            { table: 'income_sheets', column: 'exclude_from_balance', type: 'BOOLEAN DEFAULT FALSE' },
+            { table: 'expenses', column: 'is_preliminary', type: 'BOOLEAN DEFAULT FALSE' }
+        ];
         
-        // Добавляем новые колонки, если их нет
-        await query(`
-            DO $$ 
-            BEGIN
-                IF NOT EXISTS (
-                    SELECT 1 FROM information_schema.columns 
-                    WHERE table_name = 'income_sheets' AND column_name = 'exclude_from_balance'
-                ) THEN
-                    ALTER TABLE income_sheets ADD COLUMN exclude_from_balance BOOLEAN DEFAULT FALSE;
-                END IF;
-            END $$;
-        `);
-        console.log('✓ Added exclude_from_balance column to income_sheets if not exists');
-        
-        await query(`
-            DO $$ 
-            BEGIN
-                IF NOT EXISTS (
-                    SELECT 1 FROM information_schema.columns 
-                    WHERE table_name = 'expenses' AND column_name = 'is_preliminary'
-                ) THEN
-                    ALTER TABLE expenses ADD COLUMN is_preliminary BOOLEAN DEFAULT FALSE;
-                END IF;
-            END $$;
-        `);
-        console.log('✓ Added is_preliminary column to expenses if not exists');
+        for (const { table, column, type } of columns) {
+            await query(`
+                DO $$ 
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1 FROM information_schema.columns 
+                        WHERE table_name = '${table}' AND column_name = '${column}'
+                    ) THEN
+                        ALTER TABLE ${table} ADD COLUMN ${column} ${type};
+                    END IF;
+                END $$;
+            `);
+        }
+        console.log('✓ Additional columns added if not exist');
         
         console.log('\n✅ Database migration completed successfully!');
         
@@ -156,5 +111,4 @@ async function migrate() {
     }
 }
 
-// Запускаем миграцию
 migrate();
