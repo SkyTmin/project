@@ -28,7 +28,8 @@ class Router {
     // Обработка текущего маршрута
     async handleRoute() {
         const hash = window.location.hash.slice(1) || '/';
-        
+        console.log('Navigating to route:', hash);
+
         // Вызываем guard если есть
         if (this.beforeEach) {
             const canProceed = await this.beforeEach(hash, this.currentRoute);
@@ -39,7 +40,7 @@ class Router {
         
         // Находим обработчик
         let handler = this.routes.get(hash);
-        
+
         // Если точного совпадения нет, ищем с параметрами
         if (!handler) {
             for (const [route, routeHandler] of this.routes) {
@@ -51,12 +52,15 @@ class Router {
                 }
             }
         }
-        
+
         // Если обработчик не найден, используем дефолтный
         if (!handler) {
             handler = this.routes.get('*') || (() => console.error('Route not found:', hash));
         }
-        
+
+        // Логирование перед активацией маршрута
+        console.log('Current route handler:', handler);
+
         // Вызываем обработчик
         try {
             await handler(hash);
