@@ -83,7 +83,10 @@ app.get('*', (req, res) => {
 });
 
 // Обработка ошибок
-app.use(errorHandler);
+app.use((err, req, res, next) => {
+    console.error(err);
+    res.status(500).json({ error: 'Internal Server Error' });
+});
 
 // Запуск сервера
 app.listen(PORT, () => {
