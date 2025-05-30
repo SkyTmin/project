@@ -12,10 +12,10 @@ router.use(authenticateToken);
 // Получить все листы доходов пользователя
 router.get('/', asyncHandler(async (req, res) => {
     const result = await query(
-        `SELECT id, name, income_amount, date, exclude_from_balance, created_at, updated_at 
+        `SELECT id, name, income_amount, date, exclude_from_balance, is_preliminary, created_at, updated_at 
          FROM income_sheets 
          WHERE user_id = $1 
-         ORDER BY date DESC, created_at DESC`,
+         ORDER BY is_preliminary, date DESC, created_at DESC`,
         [req.user.id]
     );
     
