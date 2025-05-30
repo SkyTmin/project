@@ -1,12 +1,9 @@
-// AuthModule.js - Модуль аутентификации
 const AuthModule = {
     id: 'auth',
     name: 'Authentication',
     version: '1.0.0',
     
-    // Инициализация модуля
     init() {
-        // Проверяем, что модуль еще не инициализирован
         if (this.initialized) return;
         
         this.setupEventListeners();
@@ -14,19 +11,13 @@ const AuthModule = {
         this.initialized = true;
     },
     
-    // Рендеринг модуля
     render() {
-        // Скрываем навигацию
         document.getElementById('main-nav').classList.add('hidden');
-        
-        // Показываем модуль аутентификации
         document.getElementById('auth-module').classList.remove('hidden');
         document.getElementById('coco-money-module').classList.add('hidden');
     },
     
-    // Настройка обработчиков событий
     setupEventListeners() {
-        // Переключение между формами
         document.getElementById('show-register').addEventListener('click', (e) => {
             e.preventDefault();
             this.showRegisterForm();
@@ -37,66 +28,55 @@ const AuthModule = {
             this.showLoginForm();
         });
         
-        // Обработка выхода
-        window.eventBus.on('auth:logout', () => this.logout());
-    },
-    
-    // Настройка обработчиков форм
-    setupFormHandlers() {
-        // Форма входа
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await this.handleLogin(e.target);
-        });
-        
-        // Форма регистрации
-        document.getElementById('register-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await this.handleRegister(e.target);
-        });
-        
-        // Кнопка выхода
         document.getElementById('logout-btn').addEventListener('click', () => {
             this.logout();
         });
+        
+        window.eventBus.on('auth:logout', () => this.logout());
     },
     
-    // Показать форму регистрации
+    setupFormHandlers() {
+        const forms = {
+            'login-form': (e) => this.handleLogin(e.target),
+            'register-form': (e) => this.handleRegister(e.target)
+        };
+        
+        Object.entries(forms).forEach(([id, handler]) => {
+            document.getElementById(id).addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await handler(e);
+            });
+        });
+    },
+    
     showRegisterForm() {
         document.getElementById('login-form').classList.add('hidden');
         document.getElementById('register-form').classList.remove('hidden');
     },
     
-    // Показать форму входа
     showLoginForm() {
         document.getElementById('register-form').classList.add('hidden');
         document.getElementById('login-form').classList.remove('hidden');
     },
     
-    // Обработка входа
     async handleLogin(form) {
-        const email = form.elements['login-email'].value;
-        const password = form.elements['login-password'].value;
-        const rememberDevice = form.elements['remember-device'].checked;
+        const formData = new FormData(form);
+        const data = {
+            email: formData.get('login-email'),
+            password: formData.get('login-password'),
+            rememberDevice: formData.get('remember-device') === 'on'
+        };
         
         this.showLoader(true);
         
         try {
-            const response = await window.apiClient.auth.login({
-                email,
-                password,
-                rememberDevice
-            });
+            const response = await window.apiClient.auth.login(data);
             
-            // Сохраняем данные пользователя
             window.stateManager.setState('user', response.user);
             window.stateManager.setState('token', response.token);
             window.apiClient.setAuthToken(response.token);
             
-            // Показываем уведомление
             this.showToast('Вход выполнен успешно', 'success');
-            
-            // Переходим к основному приложению
             window.router.navigate('/home');
         } catch (error) {
             this.showToast(error.message || 'Ошибка входа', 'error');
@@ -105,13 +85,10 @@ const AuthModule = {
         }
     },
     
-    // Обработка регистрации
     async handleRegister(form) {
-        const email = form.elements['register-email'].value;
-        const password = form.elements['register-password'].value;
-        const verificationDate = form.elements['register-date'].value;
+        const formData = new FormData(form);
+        const verificationDate = formData.get('register-date');
         
-        // Проверяем, что введена вчерашняя дата
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         const inputDate = new Date(verificationDate);
@@ -121,24 +98,22 @@ const AuthModule = {
             return;
         }
         
+        const data = {
+            email: formData.get('register-email'),
+            password: formData.get('register-password'),
+            verification_date: verificationDate
+        };
+        
         this.showLoader(true);
         
         try {
-            const response = await window.apiClient.auth.register({
-                email,
-                password,
-                verification_date: verificationDate
-            });
+            const response = await window.apiClient.auth.register(data);
             
-            // Сохраняем данные пользователя
             window.stateManager.setState('user', response.user);
             window.stateManager.setState('token', response.token);
             window.apiClient.setAuthToken(response.token);
             
-            // Показываем уведомление
             this.showToast('Регистрация выполнена успешно', 'success');
-            
-            // Переходим к основному приложению
             window.router.navigate('/home');
         } catch (error) {
             this.showToast(error.message || 'Ошибка регистрации', 'error');
@@ -147,7 +122,6 @@ const AuthModule = {
         }
     },
     
-    // Выход из системы
     async logout() {
         this.showLoader(true);
         
@@ -157,18 +131,15 @@ const AuthModule = {
             console.error('Logout error:', error);
         }
         
-        // Очищаем состояние
         window.stateManager.clear();
         window.apiClient.setAuthToken(null);
         
-        // Переходим к форме входа
         window.router.navigate('/');
         
         this.showLoader(false);
         this.showToast('Вы вышли из системы', 'success');
     },
     
-    // Проверка аутентификации
     async checkAuth() {
         const token = window.stateManager.getState('token');
         if (!token) return false;
@@ -178,24 +149,17 @@ const AuthModule = {
             window.stateManager.setState('user', response.user);
             return true;
         } catch (error) {
-            // Токен недействителен
             window.stateManager.clear();
             window.apiClient.setAuthToken(null);
             return false;
         }
     },
     
-    // Показать/скрыть индикатор загрузки
     showLoader(show) {
         const loader = document.getElementById('loader');
-        if (show) {
-            loader.classList.remove('hidden');
-        } else {
-            loader.classList.add('hidden');
-        }
+        if (loader) loader.classList.toggle('hidden', !show);
     },
     
-    // Показать уведомление
     showToast(message, type = 'info') {
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
@@ -204,7 +168,6 @@ const AuthModule = {
         
         container.appendChild(toast);
         
-        // Удаляем через 3 секунды
         setTimeout(() => {
             toast.style.animation = 'fadeOut 0.3s ease';
             setTimeout(() => toast.remove(), 300);
@@ -212,5 +175,4 @@ const AuthModule = {
     }
 };
 
-// Регистрируем модуль
 window.moduleManager.register(AuthModule);
