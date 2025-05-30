@@ -1,5 +1,3 @@
-# railway.toml - Конфигурация для развертывания на Railway
-
 [build]
 builder = "nixpacks"
 buildCommand = "npm install"
@@ -14,6 +12,3 @@ restartPolicyMaxRetries = 3
 [env]
 NODE_ENV = "production"
 PORT = "${{PORT}}"
-
-# Railway автоматически предоставит DATABASE_URL для PostgreSQL
-# JWT_SECRET нужно будет установить вручную в Railway Dashboard
