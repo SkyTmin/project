@@ -33,20 +33,25 @@ const CocoMoneyModule = {
     
     // Рендеринг модуля
     render() {
+        // Показываем навигацию
         const nav = document.getElementById('main-nav');
         nav.classList.remove('hidden');
         
+        // Обновляем email пользователя
         const user = window.stateManager.getState('user');
         if (user) {
             document.getElementById('user-email').textContent = user.email;
         }
         
+        // Скрываем другие модули и показываем Coco Money
         document.getElementById('auth-module').classList.add('hidden');
         document.getElementById('home-module').classList.add('hidden');
         document.getElementById('coco-money-module').classList.remove('hidden');
         
+        // Скрываем полноэкранный вид
         document.getElementById('sheet-fullscreen').classList.add('hidden');
         
+        // Проверяем наличие листов
         const sheets = window.stateManager.getState('incomeSheets');
         if (sheets.length === 0) {
             this.showEmptyState();
@@ -315,66 +320,46 @@ const CocoMoneyModule = {
     
     // Рендеринг карточек листов
     renderSheets() {
-        const regularContainer = document.getElementById('regular-sheets');
-        const preliminaryContainer = document.getElementById('preliminary-sheets');
+        const container = document.getElementById('sheets-grid');
         const sheets = window.stateManager.getState('incomeSheets');
         const expenses = window.stateManager.getState('expenses');
         
-        const regularSheets = sheets.filter(s => !s.is_preliminary).sort((a, b) => new Date(b.date) - new Date(a.date));
-        const preliminarySheets = sheets.filter(s => s.is_preliminary).sort((a, b) => new Date(b.date) - new Date(a.date));
+        container.innerHTML = '';
         
-        regularContainer.innerHTML = '';
-        if (regularSheets.length === 0) {
-            regularContainer.innerHTML = '<div class="empty-sheets">Нет листов доходов</div>';
-        } else {
-            regularSheets.forEach(sheet => {
-                regularContainer.appendChild(this.createSheetCard(sheet, expenses));
+        sheets.forEach(sheet => {
+            const sheetExpenses = expenses.filter(e => e.income_sheet_id === sheet.id && !e.is_preliminary);
+            const totalExpenses = sheetExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+            const balance = parseFloat(sheet.income_amount) - totalExpenses;
+            
+            const card = document.createElement('div');
+            card.className = `sheet-card ${sheet.exclude_from_balance ? 'excluded' : ''}`;
+            card.innerHTML = `
+                <div class="sheet-card-header">
+                    <h3 class="sheet-card-title">${sheet.name}</h3>
+                    <span class="sheet-card-date">${this.formatDate(sheet.date)}</span>
+                </div>
+                <div class="sheet-card-stats">
+                    <div class="sheet-stat">
+                        <div class="sheet-stat-label">Доход</div>
+                        <div class="sheet-stat-value income">${this.formatMoney(sheet.income_amount)} руб.</div>
+                    </div>
+                    <div class="sheet-stat">
+                        <div class="sheet-stat-label">Расходы</div>
+                        <div class="sheet-stat-value expense">${this.formatMoney(totalExpenses)} руб.</div>
+                    </div>
+                    <div class="sheet-stat">
+                        <div class="sheet-stat-label">Баланс</div>
+                        <div class="sheet-stat-value">${this.formatMoney(balance)} руб.</div>
+                    </div>
+                </div>
+            `;
+            
+            card.addEventListener('click', () => {
+                this.openFullscreenSheet(sheet.id);
             });
-        }
-        
-        preliminaryContainer.innerHTML = '';
-        if (preliminarySheets.length === 0) {
-            preliminaryContainer.innerHTML = '<div class="empty-sheets">Нет предварительных доходов</div>';
-        } else {
-            preliminarySheets.forEach(sheet => {
-                preliminaryContainer.appendChild(this.createSheetCard(sheet, expenses));
-            });
-        }
-    },
-    
-    createSheetCard(sheet, expenses) {
-        const sheetExpenses = expenses.filter(e => e.income_sheet_id === sheet.id && !e.is_preliminary);
-        const totalExpenses = sheetExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
-        const balance = parseFloat(sheet.income_amount) - totalExpenses;
-        
-        const card = document.createElement('div');
-        card.className = `sheet-card ${sheet.exclude_from_balance ? 'excluded' : ''} ${sheet.is_preliminary ? 'preliminary' : ''}`;
-        card.innerHTML = `
-            <div class="sheet-card-header">
-                <h3 class="sheet-card-title">${sheet.name}</h3>
-                <span class="sheet-card-date">${this.formatDate(sheet.date)}</span>
-            </div>
-            <div class="sheet-card-stats">
-                <div class="sheet-stat">
-                    <div class="sheet-stat-label">Доход</div>
-                    <div class="sheet-stat-value income">${this.formatMoney(sheet.income_amount)} руб.</div>
-                </div>
-                <div class="sheet-stat">
-                    <div class="sheet-stat-label">Расходы</div>
-                    <div class="sheet-stat-value expense">${this.formatMoney(totalExpenses)} руб.</div>
-                </div>
-                <div class="sheet-stat">
-                    <div class="sheet-stat-label">Баланс</div>
-                    <div class="sheet-stat-value">${this.formatMoney(balance)} руб.</div>
-                </div>
-            </div>
-        `;
-        
-        card.addEventListener('click', () => {
-            this.openFullscreenSheet(sheet.id);
+            
+            container.appendChild(card);
         });
-        
-        return card;
     },
     
     // Открыть лист на весь экран
@@ -551,31 +536,6 @@ const CocoMoneyModule = {
         const name = form.elements['new-sheet-name'].value;
         const income = form.elements['new-sheet-income'].value;
         const date = form.elements['new-sheet-date'].value;
-        const isPreliminary = form.elements['new-sheet-preliminary'].checked;
-        
-        this.showLoader(true);
-        
-        try {
-            const sheet = await window.apiClient.incomeSheets.create({
-                name,
-                income_amount: parseFloat(income),
-                date,
-                exclude_from_balance: false,
-                is_preliminary: isPreliminary
-            });
-            
-            const sheets = window.stateManager.getState('incomeSheets');
-            sheets.push(sheet);
-            window.stateManager.setState('incomeSheets', sheets);
-            
-            this.hideNewSheetModal();
-            this.showToast('Лист доходов создан', 'success');
-        } catch (error) {
-            this.showToast('Ошибка создания листа', 'error');
-        } finally {
-            this.showLoader(false);
-        }
-    }, form.elements['new-sheet-date'].value;
         
         this.showLoader(true);
         
