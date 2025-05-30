@@ -1,9 +1,7 @@
-/* Стили модуля Coco Money */
 .coco-money-container {
   min-height: calc(100vh - 80px);
 }
 
-/* Шапка с балансом */
 .balance-header {
   background: linear-gradient(135deg, var(--brown) 0%, var(--brown-light) 100%);
   color: var(--white);
@@ -56,7 +54,6 @@
   letter-spacing: -1px;
 }
 
-/* Сетка карточек листов доходов */
 .sheets-container {
   display: flex;
   flex-direction: column;
@@ -193,7 +190,6 @@
   color: var(--danger);
 }
 
-/* Полноэкранный вид листа */
 .sheet-fullscreen {
   position: fixed;
   top: 0;
@@ -259,7 +255,6 @@
   padding: 1.5rem;
 }
 
-/* Информация о листе */
 .sheet-info {
   background: var(--beige-light);
   border-radius: var(--radius);
@@ -309,7 +304,6 @@
   color: var(--brown);
 }
 
-/* Форма редактирования листа */
 .sheet-edit-form {
   background: var(--beige-light);
   padding: 2rem;
@@ -319,7 +313,6 @@
   gap: 1.25rem;
 }
 
-/* Секция расходов */
 .expenses-section {
   margin-top: 2rem;
 }
@@ -417,7 +410,6 @@
   background: var(--danger);
 }
 
-/* Форма редактирования расхода */
 .expense-edit-form {
   background: var(--beige-light);
   padding: 1rem;
@@ -429,7 +421,6 @@
   align-items: center;
 }
 
-/* Чекбокс для исключения из баланса */
 .checkbox-label {
   display: flex;
   align-items: center;
@@ -446,7 +437,6 @@
   accent-color: var(--brown);
 }
 
-/* Индикатор исключенного листа */
 .sheet-card.excluded {
   opacity: 0.7;
   background: var(--beige-light);
@@ -466,7 +456,6 @@
   letter-spacing: 0.5px;
 }
 
-/* Вкладки расходов */
 .expenses-tabs {
   display: flex;
   gap: 1rem;
@@ -508,7 +497,6 @@
   animation: fadeIn 0.3s ease;
 }
 
-/* Предварительные расходы стиль */
 .expense-item.preliminary {
   background: var(--beige-light);
   border: 2px dashed var(--brown-light);
@@ -519,7 +507,6 @@
   font-style: italic;
 }
 
-/* Статистика */
 .statistics-section {
   margin-top: 3rem;
   padding: 2rem;
@@ -580,7 +567,6 @@
   color: var(--brown);
 }
 
-/* Модальное окно подтверждения */
 #confirm-modal .modal-content {
   max-width: 400px;
 }
@@ -596,12 +582,10 @@
   line-height: 1.6;
 }
 
-/* Старые стили вкладок - удаляем */
 .income-tabs {
   display: none;
 }
 
-/* Мобильная адаптация и свайпы */
 @media (max-width: 768px) {
   .balance-header {
     flex-direction: column;
@@ -642,7 +626,6 @@
     grid-template-columns: 1fr;
   }
   
-  /* Поддержка свайпов */
   .sheet-fullscreen {
     touch-action: pan-y;
   }
@@ -660,7 +643,6 @@
   }
 }
 
-/* Анимация для свайпов */
 .sheet-fullscreen.swipe-close {
   animation: slideOutToRight 0.3s ease forwards;
 }
