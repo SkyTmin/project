@@ -140,7 +140,7 @@
 
     calculateTotalBalance() {
         return this.state.incomeSheets
-            .filter(sheet => !sheet.exclude_from_balance)
+            .filter(sheet => !sheet.exclude_from_balance && !sheet.is_preliminary)
             .reduce((total, sheet) => total + this.calculateSheetBalance(sheet.id), 0);
     }
 }
