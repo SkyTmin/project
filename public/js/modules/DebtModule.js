@@ -14,14 +14,15 @@
             this.activeFilter = 'all';
             this.sortBy = 'dueDate';
             
-            this.setupEventListeners();
-            this.setupFormHandlers();
             this.initialized = true;
         },
         
         async activate() {
+            console.log('Activating DebtModule');
             await this.loadData();
             this.render();
+            this.setupEventListeners();
+            this.setupFormHandlers();
         },
         
         render() {
@@ -106,7 +107,10 @@
             
             Object.entries(listeners).forEach(([id, handler]) => {
                 const el = document.getElementById(id);
-                if (el) el.addEventListener('click', handler);
+                if (el) {
+                    el.removeEventListener('click', handler);
+                    el.addEventListener('click', handler);
+                }
             });
         },
         
@@ -119,10 +123,12 @@
             Object.entries(forms).forEach(([id, handler]) => {
                 const form = document.getElementById(id);
                 if (form) {
-                    form.addEventListener('submit', async (e) => {
+                    form.removeEventListener('submit', form._handler);
+                    form._handler = async (e) => {
                         e.preventDefault();
                         await handler(e);
-                    });
+                    };
+                    form.addEventListener('submit', form._handler);
                 }
             });
         },
