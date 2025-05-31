@@ -9,6 +9,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const incomeSheetsRoutes = require('./routes/incomeSheets');
 const expensesRoutes = require('./routes/expenses');
+const debtsRoutes = require('./routes/debts');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -55,6 +56,7 @@ app.use('/js', express.static(path.join(__dirname, 'public/js')));
 app.use('/api/auth', authRoutes);
 app.use('/api/income-sheets', incomeSheetsRoutes);
 app.use('/api/expenses', expensesRoutes);
+app.use('/api/debts', debtsRoutes);
 
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
