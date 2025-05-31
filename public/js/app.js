@@ -11,6 +11,16 @@
             window.apiClient.setAuthToken(token);
         }
         
+        ['auth', 'home', 'coco-money'].forEach(moduleId => {
+            const module = window.moduleManager.get(moduleId);
+            if (module && module.init) {
+                console.log(`Initializing module: ${moduleId}`);
+                module.init();
+            } else {
+                console.error(`Module ${moduleId} not found or has no init method`);
+            }
+        });
+        
         setupRoutes();
         
         window.router.setBeforeEach(async (to, from) => {
@@ -30,13 +40,6 @@
             return true;
         });
         
-        ['auth', 'home', 'coco-money'].forEach(moduleId => {
-            const module = window.moduleManager.get(moduleId);
-            if (module && module.init) {
-                module.init();
-            }
-        });
-        
         if (window.location.hash === '') {
             window.location.hash = '/';
         }
@@ -50,8 +53,10 @@
         window.router.register('/', async () => {
             const isAuthenticated = await checkAuthentication();
             if (isAuthenticated) {
+                console.log('User authenticated, activating home module');
                 await window.moduleManager.activateModule('home');
             } else {
+                console.log('User not authenticated, activating auth module');
                 await window.moduleManager.activateModule('auth');
             }
         });
