@@ -63,7 +63,7 @@
     showEmptyState() {
         const elements = {
             'empty-state': false,
-            'sheets-grid': true,
+            'sheets-container': true,
             'statistics-section': true,
             'fab-add-sheet': true
         };
@@ -77,7 +77,7 @@
     hideEmptyState() {
         const elements = {
             'empty-state': true,
-            'sheets-grid': false,
+            'sheets-container': false,
             'statistics-section': false,
             'fab-add-sheet': false
         };
@@ -226,6 +226,12 @@
         
         try {
             const sheets = await window.apiClient.incomeSheets.getAll();
+            sheets.sort((a, b) => {
+                if (a.is_preliminary !== b.is_preliminary) {
+                    return a.is_preliminary ? 1 : -1;
+                }
+                return new Date(b.date) - new Date(a.date);
+            });
             window.stateManager.setState('incomeSheets', sheets);
             
             if (sheets.length > 0) {
@@ -245,19 +251,24 @@
     },
     
     renderSheets() {
-        const container = document.getElementById('sheets-grid');
+        const regularContainer = document.getElementById('regular-sheets');
+        const preliminaryContainer = document.getElementById('preliminary-sheets');
         const sheets = window.stateManager.getState('incomeSheets');
         const expenses = window.stateManager.getState('expenses');
         
-        container.innerHTML = '';
+        regularContainer.innerHTML = '';
+        preliminaryContainer.innerHTML = '';
         
-        sheets.forEach(sheet => {
+        const regularSheets = sheets.filter(s => !s.is_preliminary);
+        const preliminarySheets = sheets.filter(s => s.is_preliminary);
+        
+        const renderSheet = (sheet) => {
             const sheetExpenses = expenses.filter(e => e.income_sheet_id === sheet.id && !e.is_preliminary);
             const totalExpenses = sheetExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
             const balance = parseFloat(sheet.income_amount) - totalExpenses;
             
             const card = document.createElement('div');
-            card.className = `sheet-card ${sheet.exclude_from_balance ? 'excluded' : ''}`;
+            card.className = `sheet-card ${sheet.exclude_from_balance ? 'excluded' : ''} ${sheet.is_preliminary ? 'preliminary' : ''}`;
             card.innerHTML = `
                 <div class="sheet-card-header">
                     <h3 class="sheet-card-title">${sheet.name}</h3>
@@ -280,8 +291,24 @@
             `;
             
             card.addEventListener('click', () => this.openFullscreenSheet(sheet.id));
-            container.appendChild(card);
+            return card;
+        };
+        
+        regularSheets.forEach(sheet => {
+            regularContainer.appendChild(renderSheet(sheet));
         });
+        
+        preliminarySheets.forEach(sheet => {
+            preliminaryContainer.appendChild(renderSheet(sheet));
+        });
+        
+        if (regularSheets.length === 0) {
+            regularContainer.innerHTML = '<div class="empty-sheets">Нет листов доходов</div>';
+        }
+        
+        if (preliminarySheets.length === 0) {
+            preliminaryContainer.innerHTML = '<div class="empty-sheets">Нет предварительных доходов</div>';
+        }
     },
     
     openFullscreenSheet(sheetId) {
@@ -385,10 +412,10 @@
         const sheets = window.stateManager.getState('incomeSheets');
         const expenses = window.stateManager.getState('expenses');
         
-        const includedSheets = sheets.filter(s => !s.exclude_from_balance);
-        const includedSheetIds = includedSheets.map(s => s.id);
+        const regularSheets = sheets.filter(s => !s.is_preliminary && !s.exclude_from_balance);
+        const includedSheetIds = regularSheets.map(s => s.id);
         
-        const totalIncome = includedSheets.reduce((sum, sheet) => sum + parseFloat(sheet.income_amount), 0);
+        const totalIncome = regularSheets.reduce((sum, sheet) => sum + parseFloat(sheet.income_amount), 0);
         const includedExpenses = expenses.filter(e => includedSheetIds.includes(e.income_sheet_id) && !e.is_preliminary);
         const totalExpenses = includedExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
         const avgExpense = includedExpenses.length > 0 ? totalExpenses / includedExpenses.length : 0;
@@ -397,7 +424,7 @@
         const totalPreliminary = preliminaryExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
         
         const stats = {
-            'stat-total-sheets': includedSheets.length,
+            'stat-total-sheets': regularSheets.length,
             'stat-total-income': `${this.formatMoney(totalIncome)} руб.`,
             'stat-total-expenses': `${this.formatMoney(totalExpenses)} руб.`,
             'stat-avg-expense': `${this.formatMoney(avgExpense)} руб.`,
@@ -427,7 +454,8 @@
             name: formData.get('new-sheet-name'),
             income_amount: parseFloat(formData.get('new-sheet-income')),
             date: formData.get('new-sheet-date'),
-            exclude_from_balance: false
+            exclude_from_balance: false,
+            is_preliminary: formData.get('new-sheet-preliminary') === 'on'
         };
         
         this.showLoader(true);
@@ -462,6 +490,7 @@
         document.getElementById('edit-sheet-name').value = sheet.name;
         document.getElementById('edit-sheet-income').value = sheet.income_amount;
         document.getElementById('edit-sheet-date').value = new Date(sheet.date).toISOString().split('T')[0];
+        document.getElementById('edit-sheet-preliminary').checked = sheet.is_preliminary || false;
         document.getElementById('edit-sheet-exclude').checked = sheet.exclude_from_balance || false;
     },
     
@@ -478,6 +507,7 @@
             name: document.getElementById('edit-sheet-name').value,
             income_amount: parseFloat(document.getElementById('edit-sheet-income').value),
             date: document.getElementById('edit-sheet-date').value,
+            is_preliminary: document.getElementById('edit-sheet-preliminary').checked,
             exclude_from_balance: document.getElementById('edit-sheet-exclude').checked
         };
         
@@ -670,6 +700,9 @@
         
         let exportText = `ЛИСТ ДОХОДОВ: ${sheet.name}\n`;
         exportText += `Дата: ${this.formatDate(sheet.date)}\n`;
+        if (sheet.is_preliminary) {
+            exportText += `Статус: Предварительный доход\n`;
+        }
         if (sheet.exclude_from_balance) {
             exportText += `Статус: Исключен из общего баланса\n`;
         }
