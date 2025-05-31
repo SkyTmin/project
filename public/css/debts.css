@@ -413,6 +413,7 @@
   align-items: center;
   gap: 1rem;
   transition: var(--transition);
+  min-height: 100px;
 }
 
 .debt-stat-card:hover {
@@ -423,10 +424,16 @@
 .debt-stat-icon {
   font-size: 2.5rem;
   animation: bounce 2s ease-in-out infinite;
+  flex-shrink: 0;
 }
 
 .debt-stat-info {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
 }
 
 .debt-stat-label {
@@ -436,6 +443,7 @@
   letter-spacing: 0.5px;
   margin-bottom: 0.25rem;
   text-align: center;
+  width: 100%;
 }
 
 .debt-stat-value {
@@ -443,6 +451,8 @@
   font-weight: 700;
   color: var(--brown);
   text-align: center;
+  width: 100%;
+  word-break: break-word;
 }
 
 @media (max-width: 768px) {
@@ -466,6 +476,21 @@
   
   .payment-form {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .debt-stat-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 1rem;
+  }
+  
+  .debt-stat-icon {
+    margin-bottom: 0.5rem;
+  }
+  
+  .debt-stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 1rem;
   }
 }
