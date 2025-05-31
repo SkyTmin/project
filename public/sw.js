@@ -1,9 +1,10 @@
-const CACHE_NAME = 'coco-instrument-v1.4.0';
+const CACHE_NAME = 'coco-instrument-v1.5.0';
 const urlsToCache = [
     '/',
     '/css/main.css',
     '/css/auth.css',
     '/css/coco-money.css',
+    '/css/debts.css',
     '/js/core/EventBus.js',
     '/js/core/StateManager.js',
     '/js/core/APIClient.js',
@@ -12,6 +13,7 @@ const urlsToCache = [
     '/js/modules/AuthModule.js',
     '/js/modules/HomeModule.js',
     '/js/modules/CocoMoneyModule.js',
+    '/js/modules/DebtModule.js',
     '/js/app.js',
     '/manifest.json'
 ];
