@@ -1,4 +1,7 @@
-const CocoMoneyModule = {
+(function() {
+    'use strict';
+    
+    const CocoMoneyModule = {
     id: 'coco-money',
     name: 'Coco Money',
     version: '1.4.0',
@@ -763,3 +766,4 @@ const CocoMoneyModule = {
 };
 
 window.moduleManager.register(CocoMoneyModule);
+})();
