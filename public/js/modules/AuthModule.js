@@ -1,4 +1,7 @@
-const AuthModule = {
+(function() {
+    'use strict';
+    
+    const AuthModule = {
     id: 'auth',
     name: 'Authentication',
     version: '1.0.0',
@@ -77,7 +80,10 @@ const AuthModule = {
             window.apiClient.setAuthToken(response.token);
             
             this.showToast('Вход выполнен успешно', 'success');
-            window.router.navigate('/home');
+            
+            setTimeout(() => {
+                window.router.navigate('/home');
+            }, 100);
         } catch (error) {
             this.showToast(error.message || 'Ошибка входа', 'error');
         } finally {
@@ -176,3 +182,4 @@ const AuthModule = {
 };
 
 window.moduleManager.register(AuthModule);
+})();
