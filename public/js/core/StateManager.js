@@ -8,7 +8,8 @@
             token: null,
             incomeSheets: [],
             activeSheetId: null,
-            expenses: []
+            expenses: [],
+            debts: []
         };
         this.listeners = new Map();
     }
@@ -112,7 +113,8 @@
             token: null,
             incomeSheets: [],
             activeSheetId: null,
-            expenses: []
+            expenses: [],
+            debts: []
         };
         localStorage.removeItem('cocoAppState');
         this.notifyListeners('', this.state, null);
