@@ -18,6 +18,7 @@
         document.getElementById('main-nav').classList.add('hidden');
         document.getElementById('auth-module').classList.remove('hidden');
         document.getElementById('coco-money-module').classList.add('hidden');
+        document.getElementById('debts-module').classList.add('hidden');
     },
     
     setupEventListeners() {
