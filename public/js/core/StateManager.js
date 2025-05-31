@@ -1,4 +1,7 @@
-class StateManager {
+(function() {
+    'use strict';
+    
+    class StateManager {
     constructor() {
         this.state = {
             user: null,
@@ -143,3 +146,4 @@ class StateManager {
 }
 
 window.stateManager = new StateManager();
+})();
