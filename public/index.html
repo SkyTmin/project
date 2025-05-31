@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#7B4B2A">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Coco Instrument - Управление финансами</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/auth.css">
+    <link rel="stylesheet" href="/css/coco-money.css">
+</head>
+<body>
+    <div class="app-container">
+        <nav id="main-nav" class="nav hidden">
+            <div class="nav-brand">Coco Instrument</div>
+            <div class="nav-links">
+                <a href="#/home" class="nav-link">Главная</a>
+                <a href="#/coco-money" class="nav-link">Coco Money</a>
+            </div>
+            <div class="nav-user">
+                <span id="user-email"></span>
+                <button id="logout-btn" class="btn-logout">Выход</button>
+            </div>
+        </nav>
+
+        <div class="module-container">
+            <div id="auth-module" class="module hidden">
+                <div class="auth-container">
+                    <h1 class="auth-title">Coco Instrument</h1>
+                    
+                    <form id="login-form" class="auth-form">
+                        <h2>Вход в систему</h2>
+                        <input type="email" name="login-email" placeholder="Email" required>
+                        <input type="password" name="login-password" placeholder="Пароль" required>
+                        <label class="remember-device">
+                            <input type="checkbox" name="remember-device">
+                            <span>Запомнить устройство</span>
+                        </label>
+                        <button type="submit" class="btn-primary">Войти</button>
+                        <div class="auth-switch">
+                            Нет аккаунта? <a href="#" id="show-register">Зарегистрироваться</a>
+                        </div>
+                    </form>
+                    
+                    <form id="register-form" class="auth-form hidden">
+                        <h2>Регистрация</h2>
+                        <input type="email" name="register-email" placeholder="Email" required>
+                        <input type="password" name="register-password" placeholder="Пароль" required minlength="6">
+                        <input type="date" name="register-date" placeholder="Дата верификации" required>
+                        <div class="date-hint">Введите вчерашнюю дату для верификации</div>
+                        <button type="submit" class="btn-primary">Зарегистрироваться</button>
+                        <div class="auth-switch">
+                            Уже есть аккаунт? <a href="#" id="show-login">Войти</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="home-module" class="module hidden">
+                <div class="home-container">
+                    <h1>Добро пожаловать в Coco Instrument</h1>
+                    <p class="home-description">Модульная система для управления вашими финансами</p>
+                    
+                    <div class="search-container">
+                        <input type="text" id="tool-search" class="search-input" placeholder="Поиск инструментов...">
+                        <span class="search-icon">🔍</span>
+                    </div>
+                    
+                    <div id="tools-grid" class="tools-grid">
+                        <a href="#/coco-money" class="tool-card" data-tool-name="Coco Money" data-tool-desc="Управление доходами и расходами">
+                            <div class="tool-icon">💰</div>
+                            <h3>Coco Money</h3>
+                            <p>Управление доходами и расходами</p>
+                        </a>
+                    </div>
+                    
+                    <div id="no-results" class="no-results hidden">
+                        <p>Инструменты не найдены</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="coco-money-module" class="module hidden">
+                <div class="coco-money-container">
+                    <div class="balance-header">
+                        <h2>Coco Money</h2>
+                        <div class="balance-info">
+                            <span class="balance-label">Общий баланс</span>
+                            <span id="total-balance" class="balance-amount">0 руб.</span>
+                        </div>
+                    </div>
+                    
+                    <div id="empty-state" class="empty-state hidden">
+                        <p>У вас пока нет листов доходов</p>
+                        <button id="create-first-sheet" class="btn-primary">Создать первый лист</button>
+                    </div>
+                    
+                    <div id="sheets-container" class="sheets-container">
+                        <div class="sheets-section">
+                            <h3>Листы доходов</h3>
+                            <div id="regular-sheets" class="sheets-grid"></div>
+                        </div>
+                        <div class="sheets-section">
+                            <h3>Предварительные доходы</h3>
+                            <div id="preliminary-sheets" class="sheets-grid"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="statistics-section" class="statistics-section">
+                        <h3>Статистика</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon">📊</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">Листов доходов</div>
+                                    <div id="stat-total-sheets" class="stat-value">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">💵</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">Общий доход</div>
+                                    <div id="stat-total-income" class="stat-value">0 руб.</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">💸</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">Общие расходы</div>
+                                    <div id="stat-total-expenses" class="stat-value">0 руб.</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">📈</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">Средний расход</div>
+                                    <div id="stat-avg-expense" class="stat-value">0 руб.</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">⏳</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">Предварительные</div>
+                                    <div id="stat-preliminary" class="stat-value">0 руб.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="fab-add-sheet" class="fab">+</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sheet-fullscreen" class="sheet-fullscreen hidden">
+        <div class="sheet-fullscreen-header">
+            <button id="btn-back" class="btn-back">←</button>
+            <h2 id="fullscreen-sheet-title" class="sheet-fullscreen-title"></h2>
+        </div>
+        
+        <div class="sheet-fullscreen-content">
+            <div id="sheet-info" class="sheet-info">
+                <div class="sheet-header">
+                    <h3>Информация о листе</h3>
+                    <div class="sheet-actions">
+                        <button id="edit-sheet-btn" class="btn-icon" title="Редактировать">✏️</button>
+                        <button id="export-sheet-btn" class="btn-icon" title="Экспорт">📥</button>
+                    </div>
+                </div>
+                <div class="sheet-details">
+                    <div class="detail-item">
+                        <span>Доход</span>
+                        <span id="sheet-income">0 руб.</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Расходы</span>
+                        <span id="sheet-expenses">0 руб.</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Остаток</span>
+                        <span id="sheet-balance">0 руб.</span>
+                    </div>
+                </div>
+            </div>
+            
+            <form id="sheet-edit-form" class="sheet-edit-form hidden">
+                <input type="text" id="edit-sheet-name" placeholder="Название листа" required>
+                <input type="number" id="edit-sheet-income" placeholder="Доход" required min="0" step="0.01">
+                <input type="date" id="edit-sheet-date" required>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="edit-sheet-preliminary">
+                    <span>Предварительный доход</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="edit-sheet-exclude">
+                    <span>Исключить из общего баланса</span>
+                </label>
+                <div class="form-actions">
+                    <button type="button" id="save-sheet-btn" class="btn-primary">Сохранить</button>
+                    <button type="button" id="cancel-edit-btn" class="btn-secondary">Отмена</button>
+                    <button type="button" id="delete-sheet-btn" class="btn-danger">Удалить лист</button>
+                </div>
+            </form>
+            
+            <div class="expenses-section">
+                <h4>Расходы</h4>
+                
+                <div class="expenses-tabs">
+                    <button id="tab-regular" class="expense-tab active">Обычные расходы</button>
+                    <button id="tab-preliminary" class="expense-tab">Предварительные</button>
+                </div>
+                
+                <div id="regular-expenses" class="expense-content">
+                    <form id="add-expense-form" class="expense-form">
+                        <input type="number" name="expense-amount" placeholder="Сумма" required min="0.01" step="0.01">
+                        <input type="text" name="expense-note" placeholder="Описание (необязательно)">
+                        <button type="submit" class="btn-primary">Добавить</button>
+                    </form>
+                    <div id="expenses-list" class="expenses-list"></div>
+                </div>
+                
+                <div id="preliminary-expenses" class="expense-content hidden">
+                    <form id="add-preliminary-form" class="expense-form">
+                        <input type="number" name="preliminary-amount" placeholder="Сумма" required min="0.01" step="0.01">
+                        <input type="text" name="preliminary-note" placeholder="Описание (необязательно)">
+                        <button type="submit" class="btn-primary">Добавить</button>
+                    </form>
+                    <div id="preliminary-list" class="expenses-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="new-sheet-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Новый лист доходов</h3>
+            <form id="new-sheet-form">
+                <input type="text" name="new-sheet-name" id="new-sheet-name" placeholder="Название" required>
+                <input type="number" name="new-sheet-income" id="new-sheet-income" placeholder="Доход" required min="0" step="0.01">
+                <input type="date" name="new-sheet-date" id="new-sheet-date" required>
+                <label class="checkbox-label">
+                    <input type="checkbox" name="new-sheet-preliminary" id="new-sheet-preliminary">
+                    <span>Предварительный доход</span>
+                </label>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Создать</button>
+                    <button type="button" id="cancel-new-sheet" class="btn-secondary">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="expense-edit-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Редактировать расход</h3>
+            <form id="expense-edit-form">
+                <input type="hidden" name="edit-expense-id" id="edit-expense-id">
+                <input type="number" name="edit-expense-amount" id="edit-expense-amount" placeholder="Сумма" required min="0.01" step="0.01">
+                <input type="text" name="edit-expense-note" id="edit-expense-note" placeholder="Описание (необязательно)">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="edit-expense-preliminary" id="edit-expense-preliminary">
+                    <span>Предварительный расход</span>
+                </label>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Сохранить</button>
+                    <button type="button" id="cancel-expense-edit" class="btn-secondary">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="confirm-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="confirm-title"></h3>
+            <p id="confirm-message"></p>
+            <div class="form-actions">
+                <button id="confirm-yes" class="btn-primary">Да</button>
+                <button id="confirm-no" class="btn-secondary">Нет</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="export-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Экспорт данных</h3>
+            <div id="export-preview" class="export-preview"></div>
+            <div class="form-actions">
+                <button id="copy-export" class="btn-primary">Копировать</button>
+                <button id="download-export" class="btn-primary">Скачать</button>
+                <button id="close-export" class="btn-secondary">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loader" class="loader hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="/js/core/EventBus.js"></script>
+    <script src="/js/core/StateManager.js"></script>
+    <script src="/js/core/APIClient.js"></script>
+    <script src="/js/core/Router.js"></script>
+    <script src="/js/core/ModuleManager.js"></script>
+    <script src="/js/modules/AuthModule.js"></script>
+    <script src="/js/modules/HomeModule.js"></script>
+    <script src="/js/modules/CocoMoneyModule.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>
