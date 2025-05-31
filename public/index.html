@@ -101,7 +101,16 @@
                         <button id="create-first-sheet" class="btn-primary">Создать первый лист</button>
                     </div>
                     
-                    <div id="sheets-grid" class="sheets-grid"></div>
+                    <div id="sheets-container" class="sheets-container">
+                        <div class="sheets-section">
+                            <h3>Листы доходов</h3>
+                            <div id="regular-sheets" class="sheets-grid"></div>
+                        </div>
+                        <div class="sheets-section">
+                            <h3>Предварительные доходы</h3>
+                            <div id="preliminary-sheets" class="sheets-grid"></div>
+                        </div>
+                    </div>
                     
                     <div id="statistics-section" class="statistics-section">
                         <h3>Статистика</h3>
@@ -186,6 +195,10 @@
                 <input type="number" id="edit-sheet-income" placeholder="Доход" required min="0" step="0.01">
                 <input type="date" id="edit-sheet-date" required>
                 <label class="checkbox-label">
+                    <input type="checkbox" id="edit-sheet-preliminary">
+                    <span>Предварительный доход</span>
+                </label>
+                <label class="checkbox-label">
                     <input type="checkbox" id="edit-sheet-exclude">
                     <span>Исключить из общего баланса</span>
                 </label>
@@ -232,6 +245,10 @@
                 <input type="text" name="new-sheet-name" id="new-sheet-name" placeholder="Название" required>
                 <input type="number" name="new-sheet-income" id="new-sheet-income" placeholder="Доход" required min="0" step="0.01">
                 <input type="date" name="new-sheet-date" id="new-sheet-date" required>
+                <label class="checkbox-label">
+                    <input type="checkbox" name="new-sheet-preliminary" id="new-sheet-preliminary">
+                    <span>Предварительный доход</span>
+                </label>
                 <div class="form-actions">
                     <button type="submit" class="btn-primary">Создать</button>
                     <button type="button" id="cancel-new-sheet" class="btn-secondary">Отмена</button>
