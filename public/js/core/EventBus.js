@@ -1,4 +1,7 @@
-class EventBus {
+(function() {
+    'use strict';
+    
+    class EventBus {
     constructor() {
         this.events = {};
     }
@@ -46,3 +49,4 @@ class EventBus {
 }
 
 window.eventBus = new EventBus();
+})();
