@@ -1,4 +1,7 @@
-class APIClient {
+(function() {
+    'use strict';
+    
+    class APIClient {
     constructor() {
         this.baseURL = window.location.origin + '/api';
         this.headers = { 'Content-Type': 'application/json' };
@@ -84,3 +87,4 @@ class APIClient {
 }
 
 window.apiClient = new APIClient();
+})();
