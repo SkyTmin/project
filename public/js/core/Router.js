@@ -47,7 +47,11 @@
         }
 
         if (!handler) {
-            handler = this.routes.get('*') || (() => console.error('Route not found:', hash));
+            handler = this.routes.get('*');
+            if (!handler) {
+                console.error('Route not found:', hash);
+                return;
+            }
         }
 
         try {
