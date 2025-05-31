@@ -53,10 +53,8 @@
         window.router.register('/', async () => {
             const isAuthenticated = await checkAuthentication();
             if (isAuthenticated) {
-                console.log('User authenticated, activating home module');
                 await window.moduleManager.activateModule('home');
             } else {
-                console.log('User not authenticated, activating auth module');
                 await window.moduleManager.activateModule('auth');
             }
         });
@@ -101,8 +99,7 @@
     async function registerServiceWorker() {
         if ('serviceWorker' in navigator) {
             try {
-                const registration = await navigator.serviceWorker.register('/sw.js');
-                console.log('Service Worker registered:', registration);
+                await navigator.serviceWorker.register('/sw.js');
             } catch (error) {
                 console.error('Service Worker registration failed:', error);
             }
@@ -111,11 +108,6 @@
     
     window.addEventListener('unhandledrejection', event => {
         console.error('Unhandled promise rejection:', event.reason);
-        
-        const authModule = window.moduleManager.get('auth');
-        if (authModule && authModule.showToast) {
-            authModule.showToast('Произошла ошибка', 'error');
-        }
     });
     
     if (document.readyState === 'loading') {
