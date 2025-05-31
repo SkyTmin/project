@@ -55,9 +55,15 @@
 }
 
 .sheets-container {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .sheets-container {
+    grid-template-columns: 1fr;
+  }
 }
 
 .sheets-section {
@@ -82,9 +88,12 @@
 
 .empty-sheets {
   text-align: center;
-  padding: 2rem;
+  padding: 3rem;
   color: var(--brown-light);
   font-style: italic;
+  background: var(--beige-light);
+  border-radius: var(--radius);
+  border: 2px dashed var(--beige-dark);
 }
 
 .sheet-card {
@@ -565,6 +574,7 @@
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--brown);
+  text-align: center;
 }
 
 #confirm-modal .modal-content {
