@@ -84,6 +84,14 @@
         update: (id, data) => this.put(`/expenses/${id}`, data),
         delete: (id) => this.delete(`/expenses/${id}`)
     };
+    
+    debts = {
+        getAll: () => this.get('/debts'),
+        create: (data) => this.post('/debts', data),
+        update: (id, data) => this.put(`/debts/${id}`, data),
+        delete: (id) => this.delete(`/debts/${id}`),
+        addPayment: (id, data) => this.post(`/debts/${id}/payments`, data)
+    };
 }
 
 window.apiClient = new APIClient();
