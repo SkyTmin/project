@@ -18,7 +18,6 @@
         },
         
         async activate() {
-            console.log('Activating DebtModule');
             await this.loadData();
             this.render();
             this.setupEventListeners();
