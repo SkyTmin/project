@@ -13,7 +13,6 @@
         }
         
         this.modules.set(module.id, module);
-        console.log(`Module registered: ${module.name}`);
         
         if (module.routes) {
             Object.entries(module.routes).forEach(([path, handler]) => {
@@ -40,8 +39,6 @@
             await this.deactivateModule(this.activeModule.id);
         }
 
-        console.log(`Activating module: ${module.name}`);
-
         if (module.dependencies) {
             for (const dep of module.dependencies) {
                 if (!this.modules.has(dep)) {
@@ -66,8 +63,6 @@
     async deactivateModule(moduleId) {
         const module = this.modules.get(moduleId);
         if (!module) return;
-
-        console.log(`Deactivating module: ${module.name}`);
 
         if (module.deactivate) await module.deactivate();
         if (module.destroy) await module.destroy();
