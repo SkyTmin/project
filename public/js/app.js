@@ -73,6 +73,10 @@
             await window.moduleManager.activateModule('coco-money');
         });
         
+        window.router.register('/debts', async () => {
+            await window.moduleManager.activateModule('debts');
+        });
+        
         window.router.register('*', () => {
             window.router.navigate('/');
         });
