@@ -25,7 +25,6 @@
 
     async handleRoute() {
         const hash = window.location.hash.slice(1) || '/';
-        console.log('Navigating to route:', hash);
 
         if (this.beforeEach) {
             const canProceed = await this.beforeEach(hash, this.currentRoute);
@@ -49,7 +48,6 @@
         if (!handler) {
             handler = this.routes.get('*');
             if (!handler) {
-                console.error('Route not found:', hash);
                 return;
             }
         }
