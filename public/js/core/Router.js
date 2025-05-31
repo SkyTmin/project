@@ -1,4 +1,7 @@
-class Router {
+(function() {
+    'use strict';
+    
+    class Router {
     constructor() {
         this.routes = new Map();
         this.currentRoute = null;
@@ -79,3 +82,4 @@ class Router {
 }
 
 window.router = new Router();
+})();
