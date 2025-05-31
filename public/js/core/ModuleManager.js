@@ -1,4 +1,7 @@
-class ModuleManager {
+(function() {
+    'use strict';
+    
+    class ModuleManager {
     constructor() {
         this.modules = new Map();
         this.activeModule = null;
@@ -82,3 +85,4 @@ class ModuleManager {
 }
 
 window.moduleManager = new ModuleManager();
+})();
