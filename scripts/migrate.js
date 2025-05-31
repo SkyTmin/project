@@ -45,9 +45,44 @@ async function migrate() {
         `);
         console.log('✓ Expenses table created');
         
+        await query(`
+            CREATE TABLE IF NOT EXISTS debts (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                creditor_name VARCHAR(255) NOT NULL,
+                creditor_type VARCHAR(50) DEFAULT 'другое',
+                amount DECIMAL(10,2) NOT NULL,
+                currency VARCHAR(3) DEFAULT 'RUB',
+                description TEXT,
+                due_date DATE NOT NULL,
+                status VARCHAR(20) DEFAULT 'active',
+                category VARCHAR(100) DEFAULT 'Общее',
+                priority INTEGER DEFAULT 2 CHECK (priority >= 1 AND priority <= 3),
+                contact_info TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('✓ Debts table created');
+        
+        await query(`
+            CREATE TABLE IF NOT EXISTS debt_payments (
+                id SERIAL PRIMARY KEY,
+                debt_id INTEGER REFERENCES debts(id) ON DELETE CASCADE,
+                amount DECIMAL(10,2) NOT NULL,
+                payment_date DATE DEFAULT CURRENT_DATE,
+                comment TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('✓ Debt payments table created');
+        
         await query(`CREATE INDEX IF NOT EXISTS idx_income_sheets_user_id ON income_sheets(user_id)`);
         await query(`CREATE INDEX IF NOT EXISTS idx_expenses_income_sheet_id ON expenses(income_sheet_id)`);
         await query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
+        await query(`CREATE INDEX IF NOT EXISTS idx_debts_user_id ON debts(user_id)`);
+        await query(`CREATE INDEX IF NOT EXISTS idx_debts_due_date ON debts(due_date)`);
+        await query(`CREATE INDEX IF NOT EXISTS idx_debt_payments_debt_id ON debt_payments(debt_id)`);
         console.log('✓ Indexes created');
         
         await query(`
@@ -64,7 +99,8 @@ async function migrate() {
         const triggers = [
             { table: 'users', name: 'update_users_updated_at' },
             { table: 'income_sheets', name: 'update_income_sheets_updated_at' },
-            { table: 'expenses', name: 'update_expenses_updated_at' }
+            { table: 'expenses', name: 'update_expenses_updated_at' },
+            { table: 'debts', name: 'update_debts_updated_at' }
         ];
         
         for (const { table, name } of triggers) {
