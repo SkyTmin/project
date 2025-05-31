@@ -616,6 +616,12 @@ input:focus {
     margin-top: 0.75rem;
     padding-top: 0.75rem;
     border-top: 1px solid var(--beige);
+    gap: 1rem;
+    justify-content: center;
+  }
+  
+  .nav-link {
+    font-size: 0.875rem;
   }
   
   .module-container {
