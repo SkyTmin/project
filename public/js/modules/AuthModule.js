@@ -8,17 +8,17 @@
     
     init() {
         if (this.initialized) return;
-        
-        this.setupEventListeners();
-        this.setupFormHandlers();
         this.initialized = true;
     },
     
     render() {
+        console.log('Rendering AuthModule');
         document.getElementById('main-nav').classList.add('hidden');
         document.getElementById('auth-module').classList.remove('hidden');
         document.getElementById('coco-money-module').classList.add('hidden');
         document.getElementById('debts-module').classList.add('hidden');
+        this.setupEventListeners();
+        this.setupFormHandlers();
     },
     
     setupEventListeners() {
