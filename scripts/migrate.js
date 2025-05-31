@@ -25,6 +25,7 @@ async function migrate() {
                 income_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
                 date DATE NOT NULL,
                 exclude_from_balance BOOLEAN DEFAULT FALSE,
+                is_preliminary BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
@@ -83,6 +84,7 @@ async function migrate() {
         
         const columns = [
             { table: 'income_sheets', column: 'exclude_from_balance', type: 'BOOLEAN DEFAULT FALSE' },
+            { table: 'income_sheets', column: 'is_preliminary', type: 'BOOLEAN DEFAULT FALSE' },
             { table: 'expenses', column: 'is_preliminary', type: 'BOOLEAN DEFAULT FALSE' }
         ];
         
