@@ -11,7 +11,7 @@
             window.apiClient.setAuthToken(token);
         }
         
-        ['auth', 'home', 'coco-money'].forEach(moduleId => {
+        ['auth', 'home', 'finance-hub', 'coco-money', 'debts'].forEach(moduleId => {
             const module = window.moduleManager.get(moduleId);
             if (module && module.init) {
                 console.log(`Initializing module: ${moduleId}`);
@@ -69,8 +69,16 @@
             await window.moduleManager.activateModule('home');
         });
         
+        window.router.register('/finance', async () => {
+            await window.moduleManager.activateModule('finance-hub');
+        });
+        
         window.router.register('/coco-money', async () => {
             await window.moduleManager.activateModule('coco-money');
+        });
+        
+        window.router.register('/debts', async () => {
+            await window.moduleManager.activateModule('debts');
         });
         
         window.router.register('*', () => {
