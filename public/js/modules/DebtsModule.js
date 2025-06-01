@@ -25,19 +25,12 @@
         },
         
         render() {
-            const nav = document.getElementById('main-nav');
-            if (nav) nav.classList.remove('hidden');
-            
-            const user = window.stateManager.getState('user');
-            if (user) {
-                const emailElement = document.getElementById('user-email');
-                if (emailElement) emailElement.textContent = user.email;
-            }
-            
             ['auth-module', 'home-module', 'finance-hub-module', 'coco-money-module'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.add('hidden');
             });
+            
+            document.getElementById('main-nav').classList.add('hidden');
             
             const debtsModule = document.getElementById('debts-module');
             if (debtsModule) debtsModule.classList.remove('hidden');
@@ -114,6 +107,7 @@
             const listeners = {
                 'fab-add-debt': () => this.showNewDebtModal(),
                 'create-first-debt': () => this.showNewDebtModal(),
+                'debts-back-btn': () => window.router.navigate('/finance'),
                 'debt-btn-back': () => this.closeFullscreenDebt(),
                 'edit-debt-btn': () => this.showEditForm(),
                 'export-debt-btn': () => this.showExportModal(),
