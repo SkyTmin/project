@@ -1,4 +1,5 @@
 const { query, pool } = require('../config/db');
+const { migrateDebts } = require('./migrate-debts');
 require('dotenv').config();
 
 async function migrate() {
@@ -102,6 +103,8 @@ async function migrate() {
             `);
         }
         console.log('✓ Additional columns added if not exist');
+        
+        await migrateDebts();
         
         console.log('\n✅ Database migration completed successfully!');
         
