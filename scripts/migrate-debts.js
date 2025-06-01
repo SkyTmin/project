@@ -38,6 +38,16 @@ async function migrateDebts() {
         await query(`CREATE INDEX IF NOT EXISTS idx_debt_payments_debt_id ON debt_payments(debt_id)`);
         console.log('✓ Indexes created');
         
+        await query(`
+            CREATE OR REPLACE FUNCTION update_updated_at_column()
+            RETURNS TRIGGER AS $$
+            BEGIN
+                NEW.updated_at = CURRENT_TIMESTAMP;
+                RETURN NEW;
+            END;
+            $$ LANGUAGE plpgsql
+        `);
+        
         const triggers = [
             { table: 'debts', name: 'update_debts_updated_at' },
             { table: 'debt_payments', name: 'update_debt_payments_updated_at' }
