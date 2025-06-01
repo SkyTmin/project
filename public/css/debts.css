@@ -1,5 +1,25 @@
 .debts-container {
-    min-height: calc(100vh - 80px);
+    min-height: 100vh;
+    background: var(--beige-light);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
+    z-index: 150;
+}
+
+.debts-module-header {
+    background: var(--white);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .debts-header {
@@ -7,7 +27,7 @@
     color: var(--white);
     padding: 2.5rem;
     border-radius: var(--radius);
-    margin-bottom: 2rem;
+    margin: 1.5rem;
     box-shadow: var(--shadow);
     position: relative;
     overflow: hidden;
@@ -64,7 +84,7 @@
     padding: 1.5rem;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    margin-bottom: 2rem;
+    margin: 1.5rem;
 }
 
 .debts-filters {
@@ -328,6 +348,30 @@
     gap: 1.25rem;
 }
 
+.debt-edit-form textarea,
+#new-debt-modal textarea,
+#edit-debt-description {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid var(--beige);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    font-family: inherit;
+    transition: var(--transition);
+    background: var(--white);
+    resize: vertical;
+    min-height: 80px;
+}
+
+.debt-edit-form textarea:focus,
+#new-debt-modal textarea:focus,
+#edit-debt-description:focus {
+    outline: none;
+    border-color: var(--brown);
+    box-shadow: 0 0 0 4px rgba(123, 75, 42, 0.1);
+    transform: translateY(-2px);
+}
+
 .payments-section {
     margin-top: 2rem;
 }
@@ -403,7 +447,7 @@
     padding: 2rem;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    margin-top: 2rem;
+    margin: 1.5rem;
 }
 
 .debts-statistics h3 {
@@ -419,9 +463,14 @@
     gap: 1.5rem;
 }
 
+.debts-content-wrapper {
+    padding-bottom: 2rem;
+}
+
 @media (max-width: 768px) {
     .debts-header {
         padding: 2rem;
+        margin: 1rem;
     }
     
     .debts-summary {
@@ -450,5 +499,10 @@
     .payment-actions {
         margin-top: 0.75rem;
         align-self: flex-end;
+    }
+    
+    .debts-list-container,
+    .debts-statistics {
+        margin: 1rem;
     }
 }
