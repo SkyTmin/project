@@ -8,7 +8,10 @@
             token: null,
             incomeSheets: [],
             activeSheetId: null,
-            expenses: []
+            expenses: [],
+            debts: [],
+            activeDebtId: null,
+            debtPayments: []
         };
         this.listeners = new Map();
     }
@@ -112,7 +115,10 @@
             token: null,
             incomeSheets: [],
             activeSheetId: null,
-            expenses: []
+            expenses: [],
+            debts: [],
+            activeDebtId: null,
+            debtPayments: []
         };
         localStorage.removeItem('cocoAppState');
         this.notifyListeners('', this.state, null);
@@ -142,6 +148,32 @@
         return this.state.incomeSheets
             .filter(sheet => !sheet.exclude_from_balance && !sheet.is_preliminary)
             .reduce((total, sheet) => total + this.calculateSheetBalance(sheet.id), 0);
+    }
+    
+    getActiveDebt() {
+        return this.state.debts.find(debt => debt.id === this.state.activeDebtId);
+    }
+    
+    getActiveDebtPayments() {
+        if (!this.state.activeDebtId) return [];
+        return this.state.debtPayments.filter(payment => payment.debt_id === this.state.activeDebtId);
+    }
+    
+    calculateDebtRemaining(debtId) {
+        const debt = this.state.debts.find(d => d.id === debtId);
+        if (!debt) return 0;
+        
+        const payments = this.state.debtPayments
+            .filter(p => p.debt_id === debtId)
+            .reduce((sum, p) => sum + parseFloat(p.amount), 0);
+        
+        return parseFloat(debt.total_amount) - payments;
+    }
+    
+    calculateTotalDebts() {
+        return this.state.debts
+            .filter(debt => debt.status !== 'paid')
+            .reduce((total, debt) => total + this.calculateDebtRemaining(debt.id), 0);
     }
 }
 
