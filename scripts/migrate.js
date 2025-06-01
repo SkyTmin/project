@@ -5,6 +5,7 @@ async function migrate() {
     console.log('Starting database migration...');
     
     try {
+        // Tabla de usuarios
         await query(`
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
@@ -17,6 +18,7 @@ async function migrate() {
         `);
         console.log('✓ Users table created');
         
+        // Tabla de hojas de ingresos
         await query(`
             CREATE TABLE IF NOT EXISTS income_sheets (
                 id SERIAL PRIMARY KEY,
@@ -32,6 +34,7 @@ async function migrate() {
         `);
         console.log('✓ Income sheets table created');
         
+        // Tabla de gastos
         await query(`
             CREATE TABLE IF NOT EXISTS expenses (
                 id SERIAL PRIMARY KEY,
@@ -45,6 +48,7 @@ async function migrate() {
         `);
         console.log('✓ Expenses table created');
         
+        // Tabla de deudas
         await query(`
             CREATE TABLE IF NOT EXISTS debts (
                 id SERIAL PRIMARY KEY,
@@ -61,6 +65,7 @@ async function migrate() {
         `);
         console.log('✓ Debts table created');
         
+        // Tabla de pagos de deudas
         await query(`
             CREATE TABLE IF NOT EXISTS debt_payments (
                 id SERIAL PRIMARY KEY,
@@ -74,6 +79,7 @@ async function migrate() {
         `);
         console.log('✓ Debt payments table created');
         
+        // Crear índices
         await query(`CREATE INDEX IF NOT EXISTS idx_income_sheets_user_id ON income_sheets(user_id)`);
         await query(`CREATE INDEX IF NOT EXISTS idx_expenses_income_sheet_id ON expenses(income_sheet_id)`);
         await query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
@@ -82,6 +88,7 @@ async function migrate() {
         await query(`CREATE INDEX IF NOT EXISTS idx_debt_payments_debt_id ON debt_payments(debt_id)`);
         console.log('✓ Indexes created');
         
+        // Función para actualizar timestamp
         await query(`
             CREATE OR REPLACE FUNCTION update_updated_at_column()
             RETURNS TRIGGER AS $$
@@ -93,6 +100,7 @@ async function migrate() {
         `);
         console.log('✓ Update timestamp function created');
         
+        // Crear triggers
         const triggers = [
             { table: 'users', name: 'update_users_updated_at' },
             { table: 'income_sheets', name: 'update_income_sheets_updated_at' },
@@ -115,27 +123,6 @@ async function migrate() {
             `);
         }
         console.log('✓ Triggers created');
-        
-        const columns = [
-            { table: 'income_sheets', column: 'exclude_from_balance', type: 'BOOLEAN DEFAULT FALSE' },
-            { table: 'income_sheets', column: 'is_preliminary', type: 'BOOLEAN DEFAULT FALSE' },
-            { table: 'expenses', column: 'is_preliminary', type: 'BOOLEAN DEFAULT FALSE' }
-        ];
-        
-        for (const { table, column, type } of columns) {
-            await query(`
-                DO $$ 
-                BEGIN
-                    IF NOT EXISTS (
-                        SELECT 1 FROM information_schema.columns 
-                        WHERE table_name = '${table}' AND column_name = '${column}'
-                    ) THEN
-                        ALTER TABLE ${table} ADD COLUMN ${column} ${type};
-                    END IF;
-                END $$;
-            `);
-        }
-        console.log('✓ Additional columns added if not exist');
         
         console.log('\n✅ Database migration completed successfully!');
         
