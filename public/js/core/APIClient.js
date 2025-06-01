@@ -84,6 +84,21 @@
         update: (id, data) => this.put(`/expenses/${id}`, data),
         delete: (id) => this.delete(`/expenses/${id}`)
     };
+    
+    debts = {
+        getAll: () => this.get('/debts'),
+        create: (data) => this.post('/debts', data),
+        update: (id, data) => this.put(`/debts/${id}`, data),
+        updateStatus: (id, status) => this.put(`/debts/${id}/status`, { status }),
+        delete: (id) => this.delete(`/debts/${id}`)
+    };
+    
+    debtPayments = {
+        getByDebt: (debtId) => this.get(`/debt-payments/${debtId}`),
+        create: (data) => this.post('/debt-payments', data),
+        update: (id, data) => this.put(`/debt-payments/${id}`, data),
+        delete: (id) => this.delete(`/debt-payments/${id}`)
+    };
 }
 
 window.apiClient = new APIClient();
