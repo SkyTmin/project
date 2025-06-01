@@ -1,0 +1,129 @@
+.finance-hub-container {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3rem 2rem;
+    position: relative;
+}
+
+.finance-hub-container h1 {
+    font-size: 2.5rem;
+    color: var(--brown);
+    margin-bottom: 1rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.finance-description {
+    font-size: 1.25rem;
+    color: var(--brown-light);
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+.finance-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    width: 100%;
+    max-width: 800px;
+}
+
+.finance-tool-card {
+    background: var(--white);
+    padding: 2.5rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    text-decoration: none;
+    color: var(--brown);
+    transition: var(--transition);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.finance-tool-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(90deg, var(--brown) 0%, var(--brown-light) 100%);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+}
+
+.finance-tool-card:hover::before {
+    transform: translateX(0);
+}
+
+.finance-tool-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: var(--shadow-hover);
+}
+
+.finance-tool-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.finance-tool-card h3 {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+    color: var(--brown);
+    font-weight: 700;
+}
+
+.finance-tool-card p {
+    color: var(--brown-light);
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+}
+
+.finance-tool-stats {
+    width: 100%;
+    padding-top: 1.5rem;
+    border-top: 2px solid var(--beige);
+    margin-top: auto;
+}
+
+.finance-tool-stats span {
+    font-size: 0.9375rem;
+    color: var(--brown);
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .finance-hub-container {
+        padding: 2rem 1rem;
+    }
+    
+    .finance-hub-container h1 {
+        font-size: 2rem;
+    }
+    
+    .finance-tools-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .finance-tool-card {
+        padding: 2rem;
+    }
+    
+    .finance-tool-icon {
+        font-size: 3rem;
+    }
+}
