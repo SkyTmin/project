@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/auth.css">
     <link rel="stylesheet" href="/css/coco-money.css">
+    <link rel="stylesheet" href="/css/debts.css">
+    <link rel="stylesheet" href="/css/finance-hub.css">
 </head>
 <body>
     <div class="app-container">
@@ -21,7 +23,7 @@
             <div class="nav-brand">Coco Instrument</div>
             <div class="nav-links">
                 <a href="#/home" class="nav-link">Главная</a>
-                <a href="#/coco-money" class="nav-link">Coco Money</a>
+                <a href="#/finance" class="nav-link">Финансы</a>
             </div>
             <div class="nav-user">
                 <span id="user-email"></span>
@@ -73,15 +75,42 @@
                     </div>
                     
                     <div id="tools-grid" class="tools-grid">
-                        <a href="#/coco-money" class="tool-card" data-tool-name="Coco Money" data-tool-desc="Управление доходами и расходами">
-                            <div class="tool-icon">💰</div>
-                            <h3>Coco Money</h3>
-                            <p>Управление доходами и расходами</p>
+                        <a href="#/finance" class="tool-card" data-tool-name="Финансы" data-tool-desc="Управление доходами, расходами и долгами">
+                            <div class="tool-icon">💳</div>
+                            <h3>Финансы</h3>
+                            <p>Управление доходами, расходами и долгами</p>
                         </a>
                     </div>
                     
                     <div id="no-results" class="no-results hidden">
                         <p>Инструменты не найдены</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="finance-hub-module" class="module hidden">
+                <div class="finance-hub-container">
+                    <h1>Финансы</h1>
+                    <p class="finance-description">Выберите инструмент для управления финансами</p>
+                    
+                    <div class="finance-tools-grid">
+                        <a href="#/coco-money" class="finance-tool-card">
+                            <div class="finance-tool-icon">💰</div>
+                            <h3>Coco Money</h3>
+                            <p>Управление доходами и расходами</p>
+                            <div class="finance-tool-stats">
+                                <span id="money-balance-preview">Баланс: загрузка...</span>
+                            </div>
+                        </a>
+                        
+                        <a href="#/debts" class="finance-tool-card">
+                            <div class="finance-tool-icon">📊</div>
+                            <h3>Долги</h3>
+                            <p>Управление долгами и выплатами</p>
+                            <div class="finance-tool-stats">
+                                <span id="debts-total-preview">Всего долгов: загрузка...</span>
+                            </div>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -155,6 +184,80 @@
                 </div>
                 
                 <button id="fab-add-sheet" class="fab">+</button>
+            </div>
+
+            <div id="debts-module" class="module hidden">
+                <div class="debts-container">
+                    <div class="debts-header">
+                        <h2>Долги</h2>
+                        <div class="debts-summary">
+                            <div class="summary-item">
+                                <span class="summary-label">Всего долгов</span>
+                                <span id="total-debts" class="summary-amount">0 руб.</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Выплачено</span>
+                                <span id="paid-amount" class="summary-amount">0 руб.</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Осталось</span>
+                                <span id="remaining-amount" class="summary-amount">0 руб.</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="debts-empty-state" class="empty-state hidden">
+                        <p>У вас пока нет долгов</p>
+                        <button id="create-first-debt" class="btn-primary">Добавить первый долг</button>
+                    </div>
+                    
+                    <div id="debts-list-container" class="debts-list-container">
+                        <div class="debts-filters">
+                            <button class="filter-btn active" data-filter="all">Все</button>
+                            <button class="filter-btn" data-filter="active">Активные</button>
+                            <button class="filter-btn" data-filter="paid">Выплаченные</button>
+                            <button class="filter-btn" data-filter="overdue">Просроченные</button>
+                        </div>
+                        
+                        <div id="debts-list" class="debts-list"></div>
+                    </div>
+                    
+                    <div id="debts-statistics" class="debts-statistics">
+                        <h3>Статистика долгов</h3>
+                        <div class="debt-stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon">📋</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">Всего долгов</div>
+                                    <div id="stat-total-debts-count" class="stat-value">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">✅</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">Выплачено</div>
+                                    <div id="stat-paid-debts" class="stat-value">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">⏱️</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">Активные</div>
+                                    <div id="stat-active-debts" class="stat-value">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">⚠️</div>
+                                <div class="stat-info">
+                                    <div class="stat-label">Просроченные</div>
+                                    <div id="stat-overdue-debts" class="stat-value">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="fab-add-debt" class="fab">+</button>
             </div>
         </div>
     </div>
@@ -238,6 +341,73 @@
         </div>
     </div>
 
+    <div id="debt-fullscreen" class="debt-fullscreen hidden">
+        <div class="debt-fullscreen-header">
+            <button id="debt-btn-back" class="btn-back">←</button>
+            <h2 id="debt-fullscreen-title" class="debt-fullscreen-title"></h2>
+        </div>
+        
+        <div class="debt-fullscreen-content">
+            <div id="debt-info" class="debt-info">
+                <div class="debt-header">
+                    <h3>Информация о долге</h3>
+                    <div class="debt-actions">
+                        <button id="edit-debt-btn" class="btn-icon" title="Редактировать">✏️</button>
+                        <button id="export-debt-btn" class="btn-icon" title="Экспорт">📥</button>
+                    </div>
+                </div>
+                <div class="debt-details">
+                    <div class="detail-item">
+                        <span>Общая сумма</span>
+                        <span id="debt-total-amount">0 руб.</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Выплачено</span>
+                        <span id="debt-paid-amount">0 руб.</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Осталось</span>
+                        <span id="debt-remaining-amount">0 руб.</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Срок погашения</span>
+                        <span id="debt-due-date"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Статус</span>
+                        <span id="debt-status" class="debt-status-badge"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <form id="debt-edit-form" class="debt-edit-form hidden">
+                <input type="text" id="edit-debt-name" placeholder="Название долга" required>
+                <input type="text" id="edit-debt-creditor" placeholder="Кредитор" required>
+                <input type="number" id="edit-debt-amount" placeholder="Сумма долга" required min="0" step="0.01">
+                <input type="date" id="edit-debt-due-date" placeholder="Срок погашения" required>
+                <textarea id="edit-debt-description" placeholder="Описание (необязательно)" rows="3"></textarea>
+                <div class="form-actions">
+                    <button type="button" id="save-debt-btn" class="btn-primary">Сохранить</button>
+                    <button type="button" id="cancel-debt-edit-btn" class="btn-secondary">Отмена</button>
+                    <button type="button" id="delete-debt-btn" class="btn-danger">Удалить долг</button>
+                </div>
+            </form>
+            
+            <div class="payments-section">
+                <h4>История платежей</h4>
+                
+                <form id="add-payment-form" class="payment-form">
+                    <input type="number" name="payment-amount" placeholder="Сумма платежа" required min="0.01" step="0.01">
+                    <input type="date" name="payment-date" required>
+                    <input type="text" name="payment-note" placeholder="Примечание (необязательно)">
+                    <button type="submit" class="btn-primary">Добавить платеж</button>
+                </form>
+                
+                <div id="payments-list" class="payments-list"></div>
+            </div>
+        </div>
+    </div>
+
     <div id="new-sheet-modal" class="modal hidden">
         <div class="modal-content">
             <h3>Новый лист доходов</h3>
@@ -257,6 +427,23 @@
         </div>
     </div>
 
+    <div id="new-debt-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Новый долг</h3>
+            <form id="new-debt-form">
+                <input type="text" name="new-debt-name" id="new-debt-name" placeholder="Название долга" required>
+                <input type="text" name="new-debt-creditor" id="new-debt-creditor" placeholder="Кредитор" required>
+                <input type="number" name="new-debt-amount" id="new-debt-amount" placeholder="Сумма долга" required min="0" step="0.01">
+                <input type="date" name="new-debt-due-date" id="new-debt-due-date" placeholder="Срок погашения" required>
+                <textarea name="new-debt-description" id="new-debt-description" placeholder="Описание (необязательно)" rows="3"></textarea>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Создать</button>
+                    <button type="button" id="cancel-new-debt" class="btn-secondary">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="expense-edit-modal" class="modal hidden">
         <div class="modal-content">
             <h3>Редактировать расход</h3>
@@ -271,6 +458,22 @@
                 <div class="form-actions">
                     <button type="submit" class="btn-primary">Сохранить</button>
                     <button type="button" id="cancel-expense-edit" class="btn-secondary">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="payment-edit-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Редактировать платеж</h3>
+            <form id="payment-edit-form">
+                <input type="hidden" name="edit-payment-id" id="edit-payment-id">
+                <input type="number" name="edit-payment-amount" id="edit-payment-amount" placeholder="Сумма" required min="0.01" step="0.01">
+                <input type="date" name="edit-payment-date" id="edit-payment-date" required>
+                <input type="text" name="edit-payment-note" id="edit-payment-note" placeholder="Примечание (необязательно)">
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Сохранить</button>
+                    <button type="button" id="cancel-payment-edit" class="btn-secondary">Отмена</button>
                 </div>
             </form>
         </div>
@@ -312,7 +515,9 @@
     <script src="/js/core/ModuleManager.js"></script>
     <script src="/js/modules/AuthModule.js"></script>
     <script src="/js/modules/HomeModule.js"></script>
+    <script src="/js/modules/FinanceHubModule.js"></script>
     <script src="/js/modules/CocoMoneyModule.js"></script>
+    <script src="/js/modules/DebtsModule.js"></script>
     <script src="/js/app.js"></script>
 </body>
 </html>
