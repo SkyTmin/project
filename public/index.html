@@ -188,76 +188,83 @@
 
             <div id="debts-module" class="module hidden">
                 <div class="debts-container">
-                    <div class="debts-header">
+                    <div class="debts-module-header">
+                        <button id="debts-back-btn" class="btn-back">←</button>
                         <h2>Долги</h2>
-                        <div class="debts-summary">
-                            <div class="summary-item">
-                                <span class="summary-label">Всего долгов</span>
-                                <span id="total-debts" class="summary-amount">0 руб.</span>
-                            </div>
-                            <div class="summary-item">
-                                <span class="summary-label">Выплачено</span>
-                                <span id="paid-amount" class="summary-amount">0 руб.</span>
-                            </div>
-                            <div class="summary-item">
-                                <span class="summary-label">Осталось</span>
-                                <span id="remaining-amount" class="summary-amount">0 руб.</span>
-                            </div>
-                        </div>
                     </div>
                     
-                    <div id="debts-empty-state" class="empty-state hidden">
-                        <p>У вас пока нет долгов</p>
-                        <button id="create-first-debt" class="btn-primary">Добавить первый долг</button>
-                    </div>
-                    
-                    <div id="debts-list-container" class="debts-list-container">
-                        <div class="debts-filters">
-                            <button class="filter-btn active" data-filter="all">Все</button>
-                            <button class="filter-btn" data-filter="active">Активные</button>
-                            <button class="filter-btn" data-filter="paid">Выплаченные</button>
-                            <button class="filter-btn" data-filter="overdue">Просроченные</button>
+                    <div class="debts-content-wrapper">
+                        <div class="debts-header">
+                            <h2>Управление долгами</h2>
+                            <div class="debts-summary">
+                                <div class="summary-item">
+                                    <span class="summary-label">Всего долгов</span>
+                                    <span id="total-debts" class="summary-amount">0 руб.</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-label">Выплачено</span>
+                                    <span id="paid-amount" class="summary-amount">0 руб.</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-label">Осталось</span>
+                                    <span id="remaining-amount" class="summary-amount">0 руб.</span>
+                                </div>
+                            </div>
                         </div>
                         
-                        <div id="debts-list" class="debts-list"></div>
-                    </div>
-                    
-                    <div id="debts-statistics" class="debts-statistics">
-                        <h3>Статистика долгов</h3>
-                        <div class="debt-stats-grid">
-                            <div class="stat-card">
-                                <div class="stat-icon">📋</div>
-                                <div class="stat-info">
-                                    <div class="stat-label">Всего долгов</div>
-                                    <div id="stat-total-debts-count" class="stat-value">0</div>
-                                </div>
+                        <div id="debts-empty-state" class="empty-state hidden">
+                            <p>У вас пока нет долгов</p>
+                            <button id="create-first-debt" class="btn-primary">Добавить первый долг</button>
+                        </div>
+                        
+                        <div id="debts-list-container" class="debts-list-container">
+                            <div class="debts-filters">
+                                <button class="filter-btn active" data-filter="all">Все</button>
+                                <button class="filter-btn" data-filter="active">Активные</button>
+                                <button class="filter-btn" data-filter="paid">Выплаченные</button>
+                                <button class="filter-btn" data-filter="overdue">Просроченные</button>
                             </div>
-                            <div class="stat-card">
-                                <div class="stat-icon">✅</div>
-                                <div class="stat-info">
-                                    <div class="stat-label">Выплачено</div>
-                                    <div id="stat-paid-debts" class="stat-value">0</div>
+                            
+                            <div id="debts-list" class="debts-list"></div>
+                        </div>
+                        
+                        <div id="debts-statistics" class="debts-statistics">
+                            <h3>Статистика долгов</h3>
+                            <div class="debt-stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-icon">📋</div>
+                                    <div class="stat-info">
+                                        <div class="stat-label">Всего долгов</div>
+                                        <div id="stat-total-debts-count" class="stat-value">0</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon">⏱️</div>
-                                <div class="stat-info">
-                                    <div class="stat-label">Активные</div>
-                                    <div id="stat-active-debts" class="stat-value">0</div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">✅</div>
+                                    <div class="stat-info">
+                                        <div class="stat-label">Выплачено</div>
+                                        <div id="stat-paid-debts" class="stat-value">0</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon">⚠️</div>
-                                <div class="stat-info">
-                                    <div class="stat-label">Просроченные</div>
-                                    <div id="stat-overdue-debts" class="stat-value">0</div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">⏱️</div>
+                                    <div class="stat-info">
+                                        <div class="stat-label">Активные</div>
+                                        <div id="stat-active-debts" class="stat-value">0</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">⚠️</div>
+                                    <div class="stat-info">
+                                        <div class="stat-label">Просроченные</div>
+                                        <div id="stat-overdue-debts" class="stat-value">0</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    
+                    <button id="fab-add-debt" class="fab">+</button>
                 </div>
-                
-                <button id="fab-add-debt" class="fab">+</button>
             </div>
         </div>
     </div>
