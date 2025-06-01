@@ -117,63 +117,81 @@
 
             <div id="coco-money-module" class="module hidden">
                 <div class="coco-money-container">
-                    <div class="balance-header">
+                    <div class="coco-money-module-header">
+                        <button id="coco-money-back-btn" class="btn-back">←</button>
                         <h2>Coco Money</h2>
-                        <div class="balance-info">
-                            <span class="balance-label">Общий баланс</span>
-                            <span id="total-balance" class="balance-amount">0 руб.</span>
+                    </div>
+                    
+                    <div class="coco-money-content-wrapper">
+                        <div class="balance-header">
+                            <h2>Управление финансами</h2>
+                            <div class="balance-info">
+                                <span class="balance-label">Общий баланс</span>
+                                <span id="total-balance" class="balance-amount">0 руб.</span>
+                            </div>
+                        </div>
+                        
+                        <div id="empty-state" class="empty-state hidden">
+                            <p>У вас пока нет листов доходов</p>
+                            <button id="create-first-sheet" class="btn-primary">Создать первый лист</button>
+                        </div>
+                        
+                        <div id="sheets-container" class="sheets-container">
+                            <div class="sheets-section">
+                                <h3>Листы доходов</h3>
+                                <div id="regular-sheets" class="sheets-grid"></div>
+                            </div>
+                            <div class="sheets-section">
+                                <h3>Предварительные доходы</h3>
+                                <div id="preliminary-sheets" class="sheets-grid"></div>
+                            </div>
+                        </div>
+                        
+                        <div id="statistics-section" class="statistics-section">
+                            <h3>Статистика</h3>
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-icon">📊</div>
+                                    <div class="stat-info">
+                                        <div class="stat-label">Листов доходов</div>
+                                        <div id="stat-total-sheets" class="stat-value">0</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">💵</div>
+                                    <div class="stat-info">
+                                        <div class="stat-label">Общий доход</div>
+                                        <div id="stat-total-income" class="stat-value">0 руб.</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">💸</div>
+                                    <div class="stat-info">
+                                        <div class="stat-label">Общие расходы</div>
+                                        <div id="stat-total-expenses" class="stat-value">0 руб.</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">📈</div>
+                                    <div class="stat-info">
+                                        <div class="stat-label">Средний расход</div>
+                                        <div id="stat-avg-expense" class="stat-value">0 руб.</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">⏳</div>
+                                    <div class="stat-info">
+                                        <div class="stat-label">Предварительные</div>
+                                        <div id="stat-preliminary" class="stat-value">0 руб.</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    <div id="empty-state" class="empty-state hidden">
-                        <p>У вас пока нет листов доходов</p>
-                        <button id="create-first-sheet" class="btn-primary">Создать первый лист</button>
-                    </div>
-                    
-                    <div id="sheets-container" class="sheets-container">
-                        <div class="sheets-section">
-                            <h3>Листы доходов</h3>
-                            <div id="regular-sheets" class="sheets-grid"></div>
-                        </div>
-                        <div class="sheets-section">
-                            <h3>Предварительные доходы</h3>
-                            <div id="preliminary-sheets" class="sheets-grid"></div>
-                        </div>
-                    </div>
-                    
-                    <div id="statistics-section" class="statistics-section">
-                        <h3>Статистика</h3>
-                        <div class="stats-grid">
-                            <div class="stat-card">
-                                <div class="stat-icon">📊</div>
-                                <div class="stat-info">
-                                    <div class="stat-label">Листов доходов</div>
-                                    <div id="stat-total-sheets" class="stat-value">0</div>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon">💵</div>
-                                <div class="stat-info">
-                                    <div class="stat-label">Общий доход</div>
-                                    <div id="stat-total-income" class="stat-value">0 руб.</div>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon">💸</div>
-                                <div class="stat-info">
-                                    <div class="stat-label">Общие расходы</div>
-                                    <div id="stat-total-expenses" class="stat-value">0 руб.</div>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon">📈</div>
-                                <div class="stat-info">
-                                    <div class="stat-label">Средний расход</div>
-                                    <div id="stat-avg-expense" class="stat-value">0 руб.</div>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon">⏳</div>
+                    <button id="fab-add-sheet" class="fab">+</button>
+                </div>
+            </div>⏳</div>
                                 <div class="stat-info">
                                     <div class="stat-label">Предварительные</div>
                                     <div id="stat-preliminary" class="stat-value">0 руб.</div>
